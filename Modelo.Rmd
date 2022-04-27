@@ -22,30 +22,28 @@ Para el modelo hay que tener en cuenta que hay dos poblaciones distintas que son
 
 ## Modelo para los abuelos
 
-Para hacer el modelo de los abuelos y como se mencionó anteriormente tomamos las bases de datos:
+Para hacer el modelo de los abuelos buscamos en qué bases de datos habían más datos de abuelos mayores a 60 años,con lo que tomamos las siguientes bases de datos:
 
 * Vivienda
 * Salud
-* Composicion del hogar
 * Tecnología
 * Educacion
 
-Con estas variables independientes, modelamos con la variable de respuesta Y = "En general, qué tan satisfecho(a) se siente ... con su vida actualmente ". Hay que tener en cuenta que en total de abuelos que era 36839 datos, 8624 no respondieron esta pregunta, seguramente por su alta edad o alguna otra razón con lo cual tenemos 28215 datos de abuelos para partir entre datos de entramiendo y validación.
+Con estas variables independientes, modelamos con la variable de respuesta Y = Satisfacción. Hay que tener en cuenta que en total de abuelos que era 36839 datos, 8624 no respondieron esta pregunta, seguramente por su alta edad o alguna otra razón con lo cual tenemos 28215 datos de abuelos para partir entre datos de entramiendo y validación.
 
 
 ```{r,include=F}
 library(readr)
 library(kableExtra)
-datos_modelo<- read.csv("Datos_modelo.csv")
-#
-#vivienda_abuelos <- read.csv("SatisfaccionViviendaAbuelos.csv")
-#salud_abuelos <- read.csv("satistaccion_salud_abuelos.csv")
-#serv_hogar_abuelos <- read.csv("serv_hogar_abuelos.csv")
-#comp_hogar_abuelos <- read.csv("comp_hogar_abuelos.csv")
-#tecno_abuelos <- read.csv("SatisfaccionTecnologiaabuelos.csv")
-#educacion_abuelos <- read.csv("SatisfaccionEducacionAbuelos.csv")
-#Caract_hogar <- read_delim("D:/Desktop/TAE/ENTREGA 1/Características y composición del hogar.csv", 
-#    ";", escape_double = FALSE, trim_ws = TRUE)
+
+vivienda_abuelos <- read.csv("SatisfaccionViviendaAbuelos.csv")
+salud_abuelos <- read.csv("satistaccion_salud_abuelos.csv")
+serv_hogar_abuelos <- read.csv("serv_hogar_abuelos.csv")
+comp_hogar_abuelos <- read.csv("comp_hogar_abuelos.csv")
+tecno_abuelos <- read.csv("SatisfaccionTecnologiaabuelos.csv")
+educacion_abuelos <- read.csv("SatisfaccionEducacionAbuelos.csv")
+Caract_hogar <- read_delim("D:/Desktop/TAE/ENTREGA 1/Características y composición del hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
 
 ```
 
@@ -53,82 +51,62 @@ datos_modelo<- read.csv("Datos_modelo.csv")
 ```{r,include=FALSE}
 ## Organizacion de las variables
 
-#vivienda_abuelos$id <- paste(vivienda_abuelos$DIRECTORIO,vivienda_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-#salud_abuelos$id <- paste(salud_abuelos$DIRECTORIO,salud_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-#serv_hogar_abuelos$id <- paste(serv_hogar_abuelos$DIRECTORIO,serv_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-#comp_hogar_abuelos$id <- paste(comp_hogar_abuelos$DIRECTORIO,comp_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-#tecno_abuelos$id <- paste(tecno_abuelos$DIRECTORIO,tecno_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-#educacion_abuelos$id <- paste(educacion_abuelos$DIRECTORIO,educacion_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-#Caract_hogar$id <- paste(Caract_hogar$DIRECTORIO,Caract_hogar$SECUENCIA_ENCUESTA,sep = "-")  #48
-#
-#datos_modelo <- vivienda_abuelos[,c(2,3,4)]
-#
-#colnames(educacion_abuelos)[4] <- "Satisfaccion_educacion"
-#colnames(salud_abuelos)[5] <- "Satisfaccion_salud"
-#colnames(serv_hogar_abuelos)[4] <- "Satisfaccion_servicios_hogar"
-#colnames(tecno_abuelos)[4] <- "Satisfaccion_tecnologia"
-#colnames(comp_hogar_abuelos)[4] <- "Satisfaccion_composicion_hogar"
-#
-#datos_modelo$Satisfaccion_educacion <- c(0)
-#datos_modelo$Satisfaccion_salud <- c(0)
-#datos_modelo$Satisfaccion_servicios_hogar <- c(0)
-#datos_modelo$Satisfaccion_tecnologia <- c(0)
-#datos_modelo$Satisfaccion_composicion_hogar <- c(0)
+vivienda_abuelos$id <- paste(vivienda_abuelos$DIRECTORIO,vivienda_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+salud_abuelos$id <- paste(salud_abuelos$DIRECTORIO,salud_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+serv_hogar_abuelos$id <- paste(serv_hogar_abuelos$DIRECTORIO,serv_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+comp_hogar_abuelos$id <- paste(comp_hogar_abuelos$DIRECTORIO,comp_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+tecno_abuelos$id <- paste(tecno_abuelos$DIRECTORIO,tecno_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+educacion_abuelos$id <- paste(educacion_abuelos$DIRECTORIO,educacion_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+Caract_hogar$id <- paste(Caract_hogar$DIRECTORIO,Caract_hogar$SECUENCIA_ENCUESTA,sep = "-")  #48
+
+datos_modelo <- vivienda_abuelos[,c(2,3,4)]
+
+colnames(educacion_abuelos)[4] <- "Satisfaccion_educacion"
+colnames(salud_abuelos)[5] <- "Satisfaccion_salud"
+colnames(serv_hogar_abuelos)[4] <- "Satisfaccion_servicios_hogar"
+colnames(tecno_abuelos)[4] <- "Satisfaccion_tecnologia"
+colnames(comp_hogar_abuelos)[4] <- "Satisfaccion_composicion_hogar"
+
+datos_modelo$Satisfaccion_educacion <- c(0)
+datos_modelo$Satisfaccion_salud <- c(0)
+datos_modelo$Satisfaccion_servicios_hogar <- c(0)
+datos_modelo$Satisfaccion_tecnologia <- c(0)
+datos_modelo$Satisfaccion_composicion_hogar <- c(0)
 ```
 
 
 ```{r,include=FALSE}
 
 ## Pegando las satisfacciones en una base de datos
+for (i in 1:nrow(vivienda_abuelos)) {
+  indice <- which(vivienda_abuelos$id[i]==educacion_abuelos$id)
+  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_educacion[i]<- educacion_abuelos$Satisfaccion_educacion[i])
+}
 
-#for (i in 1:nrow(vivienda_abuelos)) {
-#  indice <- which(vivienda_abuelos$id[i]==educacion_abuelos$id)
-#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_educacion[i]<- educacion_abuelos$Satisfaccion_educacion[i])
-#}
-#
-#for (i in 1:nrow(vivienda_abuelos)) {
-#  indice <- which(vivienda_abuelos$id[i]==salud_abuelos$id)
-#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_salud[i]<- salud_abuelos$Satisfaccion_salud[i])
-#}
-#
-#for (i in 1:nrow(vivienda_abuelos)) {
-#  indice <- which(vivienda_abuelos$id[i]==serv_hogar_abuelos$id)
-#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_servicios_hogar[i]<- serv_hogar_abuelos$Satisfaccion_servicios_hogar[i])
-#}
-#
-#for (i in 1:nrow(vivienda_abuelos)) {
-#  indice <- which(vivienda_abuelos$id[i]==tecno_abuelos$id)
-#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_tecnologia[i]<- tecno_abuelos$Satisfaccion_tecnologia[i])
-#}
-#
-#for (i in 1:nrow(vivienda_abuelos)) {
-#  indice <- which(vivienda_abuelos$id[i]==comp_hogar_abuelos$id)
-#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_composicion_hogar[i]<- comp_hogar_abuelos$Satisfaccion_composicion_hogar[i])
-#}
+for (i in 1:nrow(vivienda_abuelos)) {
+  indice <- which(vivienda_abuelos$id[i]==salud_abuelos$id)
+  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_salud[i]<- salud_abuelos$Satisfaccion_salud[i])
+}
+
+for (i in 1:nrow(vivienda_abuelos)) {
+  indice <- which(vivienda_abuelos$id[i]==serv_hogar_abuelos$id)
+  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_servicios_hogar[i]<- serv_hogar_abuelos$Satisfaccion_servicios_hogar[i])
+}
+
+for (i in 1:nrow(vivienda_abuelos)) {
+  indice <- which(vivienda_abuelos$id[i]==tecno_abuelos$id)
+  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_tecnologia[i]<- tecno_abuelos$Satisfaccion_tecnologia[i])
+}
+
+for (i in 1:nrow(vivienda_abuelos)) {
+  indice <- which(vivienda_abuelos$id[i]==comp_hogar_abuelos$id)
+  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_composicion_hogar[i]<- comp_hogar_abuelos$Satisfaccion_composicion_hogar[i])
+}
 
 
 ```
 
 
-```{r,include=FALSE}
-#Pegando la satisfaccion total
-
-#datos_modelo$satisfaccion_total <- c(0)
-#
-#for (i in 1:nrow(vivienda_abuelos)) {
-#  
-#  indice <- which(vivienda_abuelos[i,5]==Caract_hogar[,48])
-#  
-#  ifelse(indice>=1,yes = datos_modelo$satisfaccion_total[i]<-Caract_hogar[i,37])
-#  
-#  
-#}
-#
-#eliminar <- which(datos_modelo$satisfaccion_total=="NA")
-#datos_modelo<- datos_modelo[-eliminar,]
-#
-#write.csv(datos_modelo,file = "Datos_modelo.csv")
-```
 
 ```{r,echo=FALSE}
 kable(head(datos_modelo),caption = "<center> <strong> Base de datos para el modelo </strong> <center>") %>%
@@ -146,7 +124,6 @@ Primero separamos nuestra base de datos en dos, entre datos de entrenamiento y d
 Con estos datos de entrenamiento procedemos a calibrar nuestro modelo de regresión múltiple .
 
 ```{r}
-datos_modelo<- read.csv("Datos_modelo.csv")
 p_val <- 0.20
 n_datos <- dim(datos_modelo)[1] # cantidad de observaciones
 n_val <- p_val*n_datos # cantidad de observaciones para validación
@@ -180,7 +157,7 @@ x$coefficients
 
 
 
-Y el mejor modelo tiene la forma: "Satisfaccion" = $B_1 * Vivienda + B_2 * Salud$, lo cual tiene bastante sentido ya que los abuelos no suele gustarle mucho la tecnología y muchos de ellos no tuvieron una buena educación.
+Y el mejor modelo tiene la forma: "Satisfaccion" = $B_1 * Vivienda + B_2 * Salud$, lo cual tiene bastante sentido ya que los abuelos no suele gustarle mucho la tecnología y muchos de ellos no tuvieron una buena educación. 
 
 ```{r}
 modelo <- lm(formula = Satisfaccion_composicion_hogar ~ Satisfaccion_vivienda + 
@@ -220,7 +197,7 @@ kable(head(datos_vl[,c(6,7,8)]),caption = "Tabla de los primeros datos ") %>%
 
 ```
 
-Con lo cual podemos ver por ejemplo qué cantidad de sujetos tienen un error por debajo del 25%
+Con lo cual podemos ver por ejemplo qué cantidad de sujetos tienen un error por debajo del 25%, es decir que erran en maximo 25% con la respuesta verdadera.
 
 ```{r}
 length(which(datos_vl$error<25))
@@ -247,7 +224,4 @@ table(datos_vl$clasificacion)
 
 ```
 Con lo que se evidencia, que utilizando intervalos de confianza, acierta en absolutamente todo.
-
-
-## Modelo para los niños
 
