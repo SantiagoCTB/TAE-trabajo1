@@ -1,0 +1,253 @@
+---
+title: "Modelo"
+author: "Santiago Carvajal Torres"
+date: "26/4/2022"
+output:
+  html_document: 
+    toc: yes
+    toc_float: yes
+    highlight: zenburn
+    theme: united
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+# Modelo
+
+
+Para el modelo hay que tener en cuenta que hay dos poblaciones distintas que son los niños y los abuelos, con lo que decidimos hacer dos modelos diferentes para cada poblacion.
+
+## Modelo para los abuelos
+
+Para hacer el modelo de los abuelos y como se mencionó anteriormente tomamos las bases de datos:
+
+* Vivienda
+* Salud
+* Composicion del hogar
+* Tecnología
+* Educacion
+
+Con estas variables independientes, modelamos con la variable de respuesta Y = "En general, qué tan satisfecho(a) se siente ... con su vida actualmente ". Hay que tener en cuenta que en total de abuelos que era 36839 datos, 8624 no respondieron esta pregunta, seguramente por su alta edad o alguna otra razón con lo cual tenemos 28215 datos de abuelos para partir entre datos de entramiendo y validación.
+
+
+```{r,include=F}
+library(readr)
+library(kableExtra)
+datos_modelo<- read.csv("Datos_modelo.csv")
+#
+#vivienda_abuelos <- read.csv("SatisfaccionViviendaAbuelos.csv")
+#salud_abuelos <- read.csv("satistaccion_salud_abuelos.csv")
+#serv_hogar_abuelos <- read.csv("serv_hogar_abuelos.csv")
+#comp_hogar_abuelos <- read.csv("comp_hogar_abuelos.csv")
+#tecno_abuelos <- read.csv("SatisfaccionTecnologiaabuelos.csv")
+#educacion_abuelos <- read.csv("SatisfaccionEducacionAbuelos.csv")
+#Caract_hogar <- read_delim("D:/Desktop/TAE/ENTREGA 1/Características y composición del hogar.csv", 
+#    ";", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+
+```{r,include=FALSE}
+## Organizacion de las variables
+
+#vivienda_abuelos$id <- paste(vivienda_abuelos$DIRECTORIO,vivienda_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+#salud_abuelos$id <- paste(salud_abuelos$DIRECTORIO,salud_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+#serv_hogar_abuelos$id <- paste(serv_hogar_abuelos$DIRECTORIO,serv_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+#comp_hogar_abuelos$id <- paste(comp_hogar_abuelos$DIRECTORIO,comp_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+#tecno_abuelos$id <- paste(tecno_abuelos$DIRECTORIO,tecno_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+#educacion_abuelos$id <- paste(educacion_abuelos$DIRECTORIO,educacion_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+#Caract_hogar$id <- paste(Caract_hogar$DIRECTORIO,Caract_hogar$SECUENCIA_ENCUESTA,sep = "-")  #48
+#
+#datos_modelo <- vivienda_abuelos[,c(2,3,4)]
+#
+#colnames(educacion_abuelos)[4] <- "Satisfaccion_educacion"
+#colnames(salud_abuelos)[5] <- "Satisfaccion_salud"
+#colnames(serv_hogar_abuelos)[4] <- "Satisfaccion_servicios_hogar"
+#colnames(tecno_abuelos)[4] <- "Satisfaccion_tecnologia"
+#colnames(comp_hogar_abuelos)[4] <- "Satisfaccion_composicion_hogar"
+#
+#datos_modelo$Satisfaccion_educacion <- c(0)
+#datos_modelo$Satisfaccion_salud <- c(0)
+#datos_modelo$Satisfaccion_servicios_hogar <- c(0)
+#datos_modelo$Satisfaccion_tecnologia <- c(0)
+#datos_modelo$Satisfaccion_composicion_hogar <- c(0)
+```
+
+
+```{r,include=FALSE}
+
+## Pegando las satisfacciones en una base de datos
+
+#for (i in 1:nrow(vivienda_abuelos)) {
+#  indice <- which(vivienda_abuelos$id[i]==educacion_abuelos$id)
+#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_educacion[i]<- educacion_abuelos$Satisfaccion_educacion[i])
+#}
+#
+#for (i in 1:nrow(vivienda_abuelos)) {
+#  indice <- which(vivienda_abuelos$id[i]==salud_abuelos$id)
+#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_salud[i]<- salud_abuelos$Satisfaccion_salud[i])
+#}
+#
+#for (i in 1:nrow(vivienda_abuelos)) {
+#  indice <- which(vivienda_abuelos$id[i]==serv_hogar_abuelos$id)
+#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_servicios_hogar[i]<- serv_hogar_abuelos$Satisfaccion_servicios_hogar[i])
+#}
+#
+#for (i in 1:nrow(vivienda_abuelos)) {
+#  indice <- which(vivienda_abuelos$id[i]==tecno_abuelos$id)
+#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_tecnologia[i]<- tecno_abuelos$Satisfaccion_tecnologia[i])
+#}
+#
+#for (i in 1:nrow(vivienda_abuelos)) {
+#  indice <- which(vivienda_abuelos$id[i]==comp_hogar_abuelos$id)
+#  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_composicion_hogar[i]<- comp_hogar_abuelos$Satisfaccion_composicion_hogar[i])
+#}
+
+
+```
+
+
+```{r,include=FALSE}
+#Pegando la satisfaccion total
+
+#datos_modelo$satisfaccion_total <- c(0)
+#
+#for (i in 1:nrow(vivienda_abuelos)) {
+#  
+#  indice <- which(vivienda_abuelos[i,5]==Caract_hogar[,48])
+#  
+#  ifelse(indice>=1,yes = datos_modelo$satisfaccion_total[i]<-Caract_hogar[i,37])
+#  
+#  
+#}
+#
+#eliminar <- which(datos_modelo$satisfaccion_total=="NA")
+#datos_modelo<- datos_modelo[-eliminar,]
+#
+#write.csv(datos_modelo,file = "Datos_modelo.csv")
+```
+
+```{r,echo=FALSE}
+kable(head(datos_modelo),caption = "<center> <strong> Base de datos para el modelo </strong> <center>") %>%
+  kable_classic_2() %>%
+  scroll_box(width = "100%",height = "300px")
+```
+
+
+
+### Modelo de regresión lineal múltiple
+
+
+Primero separamos nuestra base de datos en dos, entre datos de entrenamiento y datos de validación, tomando un 20% de los datos para la validación que serían 5643 datos y 22572 de entrenamiento.
+
+Con estos datos de entrenamiento procedemos a calibrar nuestro modelo de regresión múltiple .
+
+```{r}
+datos_modelo<- read.csv("Datos_modelo.csv")
+p_val <- 0.20
+n_datos <- dim(datos_modelo)[1] # cantidad de observaciones
+n_val <- p_val*n_datos # cantidad de observaciones para validación
+set.seed(set.seed(12345))
+ix_vl <- sample(x = n_datos, size = n_val, replace = FALSE)
+
+
+datos_tr <- datos_modelo[-ix_vl,]
+
+datos_vl <- datos_modelo[ix_vl,]
+
+modelo <- lm(Satisfaccion_composicion_hogar ~ Satisfaccion_vivienda + Satisfaccion_salud + Satisfaccion_tecnologia + Satisfaccion_educacion, data = datos_tr)
+
+summary(modelo)
+```
+
+Procedemos a ver cuales son los mejores predictores, utilizando la tecnica stepwise mixto. El valor matemático empleado para determinar la calidad del modelo va a ser Akaike(AIC).
+
+```{r,echo=FALSE,include=FALSE}
+x<- step(object = modelo, direction = "both", trace = 1)
+
+```
+
+```{r}
+
+x$call
+x$coefficients
+
+```
+
+
+
+
+Y el mejor modelo tiene la forma: "Satisfaccion" = $B_1 * Vivienda + B_2 * Salud$, lo cual tiene bastante sentido ya que los abuelos no suele gustarle mucho la tecnología y muchos de ellos no tuvieron una buena educación.
+
+```{r}
+modelo <- lm(formula = Satisfaccion_composicion_hogar ~ Satisfaccion_vivienda + 
+    Satisfaccion_salud, data = datos_tr)
+summary(modelo)
+
+```
+
+Y como se puede notar con un $P_{value}=2.2e-16$ si tomamos un $α=0.05$ el modelo es altamente significativo, con todas las variables también significativas, además se puede nortar que la variable que más peso tiene es la salud.
+
+### Verificando el modelo con la base de datos de validación
+
+Para verificar si nuestro modelo si está acertando, utilizamos la base de datos que dividimos anteriormente para su validacion.
+Utilizando la función predict del R, podemos saber el valor ajustado para cada abuelo y con esto podemos calcular el error absoluto que tiene cada sujeto como lo muestra el encabezado de dicha tabla:
+
+
+
+```{r}
+datos_vl<- datos_vl[,c(2,3,4,6,8,9)]
+datos_vl$predict <- c(0)
+
+for (i in 1:nrow(datos_vl)) {
+  datos_vl$predict[i] <- as.numeric(predict(object = modelo,newdata = datos_vl[i,c(3:5)]))
+}
+
+datos_vl$error <- c(0)
+
+for (i in 1:nrow(datos_vl)) {
+  datos_vl$error[i]<- (abs(datos_vl$predict[i]-datos_vl$Satisfaccion_composicion_hogar[i])/datos_vl$Satisfaccion_composicion_hogar[i])*100
+}
+datos_vl$clasificacion<- c(0)
+colnames(datos_vl)[6] <- "Respuesta"
+kable(head(datos_vl[,c(6,7,8)]),caption = "Tabla de los primeros datos ") %>%
+  kable_classic()
+
+
+
+```
+
+Con lo cual podemos ver por ejemplo qué cantidad de sujetos tienen un error por debajo del 25%
+
+```{r}
+length(which(datos_vl$error<25))
+```
+
+Esto nos demuestra que nuestro modelo acierta de una muy buena manera teniendo en cuenta que el total de datos de validacion son 5643, lo que quiere decir que solo 1368 datos tienen un error por encima del 25%.
+
+Adicionalmente a esto, si queremos hacer intervalos de confianza para la predicción de la satisfacción, podemos clasificar qué valores reales están dentro de nuestro intervalo del 95% poniendo "Funciona" a los que están dentro y "No funciona" a los que caen por fuera de nuestro intervalo.
+
+
+
+
+```{r}
+
+for (i in 1:nrow(datos_vl)) {
+  intervalo <- predict(object = modelo,newdata = datos_vl[i,c(3:5)],interval = "confidence",level = 0.90)
+  valor_real <- datos_vl$predict[i]
+  if (valor_real>=intervalo[2] & valor_real<=intervalo[3]) {
+    datos_vl$clasificacion[i] <- "Funciona"
+  }
+}
+
+table(datos_vl$clasificacion)
+
+```
+Con lo que se evidencia, que utilizando intervalos de confianza, acierta en absolutamente todo.
+
+
+## Modelo para los niños
+
