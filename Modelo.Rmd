@@ -36,72 +36,72 @@ Con estas variables independientes, modelamos con la variable de respuesta Y = S
 library(readr)
 library(kableExtra)
 
-vivienda_abuelos <- read.csv("SatisfaccionViviendaAbuelos.csv")
-salud_abuelos <- read.csv("satistaccion_salud_abuelos.csv")
-serv_hogar_abuelos <- read.csv("serv_hogar_abuelos.csv")
-comp_hogar_abuelos <- read.csv("comp_hogar_abuelos.csv")
-tecno_abuelos <- read.csv("SatisfaccionTecnologiaabuelos.csv")
-educacion_abuelos <- read.csv("SatisfaccionEducacionAbuelos.csv")
-Caract_hogar <- read_delim("D:/Desktop/TAE/ENTREGA 1/Características y composición del hogar.csv", 
-    ";", escape_double = FALSE, trim_ws = TRUE)
-
+# vivienda_abuelos <- read.csv("SatisfaccionViviendaAbuelos.csv")
+# salud_abuelos <- read.csv("satistaccion_salud_abuelos.csv")
+# serv_hogar_abuelos <- read.csv("serv_hogar_abuelos.csv")
+# comp_hogar_abuelos <- read.csv("comp_hogar_abuelos.csv")
+# tecno_abuelos <- read.csv("SatisfaccionTecnologiaabuelos.csv")
+# educacion_abuelos <- read.csv("SatisfaccionEducacionAbuelos.csv")
+# Caract_hogar <- read_delim("D:/Desktop/TAE/ENTREGA 1/Características y composición del hogar.csv", 
+#     ";", escape_double = FALSE, trim_ws = TRUE)
+# 
 ```
 
 
 ```{r,include=FALSE}
 ## Organizacion de las variables
 
-vivienda_abuelos$id <- paste(vivienda_abuelos$DIRECTORIO,vivienda_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-salud_abuelos$id <- paste(salud_abuelos$DIRECTORIO,salud_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-serv_hogar_abuelos$id <- paste(serv_hogar_abuelos$DIRECTORIO,serv_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-comp_hogar_abuelos$id <- paste(comp_hogar_abuelos$DIRECTORIO,comp_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-tecno_abuelos$id <- paste(tecno_abuelos$DIRECTORIO,tecno_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-educacion_abuelos$id <- paste(educacion_abuelos$DIRECTORIO,educacion_abuelos$SECUENCIA_ENCUESTA,sep = "-")
-Caract_hogar$id <- paste(Caract_hogar$DIRECTORIO,Caract_hogar$SECUENCIA_ENCUESTA,sep = "-")  #48
-
-datos_modelo <- vivienda_abuelos[,c(2,3,4)]
-
-colnames(educacion_abuelos)[4] <- "Satisfaccion_educacion"
-colnames(salud_abuelos)[5] <- "Satisfaccion_salud"
-colnames(serv_hogar_abuelos)[4] <- "Satisfaccion_servicios_hogar"
-colnames(tecno_abuelos)[4] <- "Satisfaccion_tecnologia"
-colnames(comp_hogar_abuelos)[4] <- "Satisfaccion_composicion_hogar"
-
-datos_modelo$Satisfaccion_educacion <- c(0)
-datos_modelo$Satisfaccion_salud <- c(0)
-datos_modelo$Satisfaccion_servicios_hogar <- c(0)
-datos_modelo$Satisfaccion_tecnologia <- c(0)
-datos_modelo$Satisfaccion_composicion_hogar <- c(0)
-```
-
-
-```{r,include=FALSE}
-
-## Pegando las satisfacciones en una base de datos
-for (i in 1:nrow(vivienda_abuelos)) {
-  indice <- which(vivienda_abuelos$id[i]==educacion_abuelos$id)
-  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_educacion[i]<- educacion_abuelos$Satisfaccion_educacion[i])
-}
-
-for (i in 1:nrow(vivienda_abuelos)) {
-  indice <- which(vivienda_abuelos$id[i]==salud_abuelos$id)
-  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_salud[i]<- salud_abuelos$Satisfaccion_salud[i])
-}
-
-for (i in 1:nrow(vivienda_abuelos)) {
-  indice <- which(vivienda_abuelos$id[i]==serv_hogar_abuelos$id)
-  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_servicios_hogar[i]<- serv_hogar_abuelos$Satisfaccion_servicios_hogar[i])
-}
-
-for (i in 1:nrow(vivienda_abuelos)) {
-  indice <- which(vivienda_abuelos$id[i]==tecno_abuelos$id)
-  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_tecnologia[i]<- tecno_abuelos$Satisfaccion_tecnologia[i])
-}
-
-for (i in 1:nrow(vivienda_abuelos)) {
-  indice <- which(vivienda_abuelos$id[i]==comp_hogar_abuelos$id)
-  ifelse(indice>=1, yes = datos_modelo$Satisfaccion_composicion_hogar[i]<- comp_hogar_abuelos$Satisfaccion_composicion_hogar[i])
-}
+# vivienda_abuelos$id <- paste(vivienda_abuelos$DIRECTORIO,vivienda_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+# salud_abuelos$id <- paste(salud_abuelos$DIRECTORIO,salud_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+# serv_hogar_abuelos$id <- paste(serv_hogar_abuelos$DIRECTORIO,serv_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+# comp_hogar_abuelos$id <- paste(comp_hogar_abuelos$DIRECTORIO,comp_hogar_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+# tecno_abuelos$id <- paste(tecno_abuelos$DIRECTORIO,tecno_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+# educacion_abuelos$id <- paste(educacion_abuelos$DIRECTORIO,educacion_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+# Caract_hogar$id <- paste(Caract_hogar$DIRECTORIO,Caract_hogar$SECUENCIA_ENCUESTA,sep = "-")  #48
+# 
+# datos_modelo <- vivienda_abuelos[,c(2,3,4)]
+# 
+# colnames(educacion_abuelos)[4] <- "Satisfaccion_educacion"
+# colnames(salud_abuelos)[5] <- "Satisfaccion_salud"
+# colnames(serv_hogar_abuelos)[4] <- "Satisfaccion_servicios_hogar"
+# colnames(tecno_abuelos)[4] <- "Satisfaccion_tecnologia"
+# colnames(comp_hogar_abuelos)[4] <- "Satisfaccion_composicion_hogar"
+# 
+# datos_modelo$Satisfaccion_educacion <- c(0)
+# datos_modelo$Satisfaccion_salud <- c(0)
+# datos_modelo$Satisfaccion_servicios_hogar <- c(0)
+# datos_modelo$Satisfaccion_tecnologia <- c(0)
+# datos_modelo$Satisfaccion_composicion_hogar <- c(0)
+# ```
+# 
+# 
+# ```{r,include=FALSE}
+# 
+# ## Pegando las satisfacciones en una base de datos
+# for (i in 1:nrow(vivienda_abuelos)) {
+#   indice <- which(vivienda_abuelos$id[i]==educacion_abuelos$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_educacion[i]<- educacion_abuelos$Satisfaccion_educacion[i])
+# }
+# 
+# for (i in 1:nrow(vivienda_abuelos)) {
+#   indice <- which(vivienda_abuelos$id[i]==salud_abuelos$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_salud[i]<- salud_abuelos$Satisfaccion_salud[i])
+# }
+# 
+# for (i in 1:nrow(vivienda_abuelos)) {
+#   indice <- which(vivienda_abuelos$id[i]==serv_hogar_abuelos$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_servicios_hogar[i]<- serv_hogar_abuelos$Satisfaccion_servicios_hogar[i])
+# }
+# 
+# for (i in 1:nrow(vivienda_abuelos)) {
+#   indice <- which(vivienda_abuelos$id[i]==tecno_abuelos$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_tecnologia[i]<- tecno_abuelos$Satisfaccion_tecnologia[i])
+# }
+# 
+# for (i in 1:nrow(vivienda_abuelos)) {
+#   indice <- which(vivienda_abuelos$id[i]==comp_hogar_abuelos$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_composicion_hogar[i]<- comp_hogar_abuelos$Satisfaccion_composicion_hogar[i])
+# }
 
 
 ```
@@ -109,6 +109,8 @@ for (i in 1:nrow(vivienda_abuelos)) {
 
 
 ```{r,echo=FALSE}
+datos_modelo <- read.csv("datos_modelo_abuelos.csv")
+datos_modelo<- datos_modelo[,-1]
 kable(head(datos_modelo),caption = "<center> <strong> Base de datos para el modelo </strong> <center>") %>%
   kable_classic_2() %>%
   scroll_box(width = "100%",height = "300px")
@@ -148,7 +150,6 @@ x<- step(object = modelo, direction = "both", trace = 1)
 ```
 
 ```{r}
-
 x$call
 x$coefficients
 
@@ -157,7 +158,7 @@ x$coefficients
 
 
 
-Y el mejor modelo tiene la forma: "Satisfaccion" = $B_1 * Vivienda + B_2 * Salud$, lo cual tiene bastante sentido ya que los abuelos no suele gustarle mucho la tecnología y muchos de ellos no tuvieron una buena educación. 
+Y el mejor modelo tiene la forma: $Satisfaccion = B_0+ B_1 * Vivienda + B_2 * Salud$, lo cual tiene bastante sentido ya que los abuelos no suele gustarle mucho la tecnología y muchos de ellos no tuvieron una buena educación. 
 
 ```{r}
 modelo <- lm(formula = Satisfaccion_composicion_hogar ~ Satisfaccion_vivienda + 
@@ -166,7 +167,7 @@ summary(modelo)
 
 ```
 
-Y como se puede notar con un $P_{value}=2.2e-16$ si tomamos un $α=0.05$ el modelo es altamente significativo, con todas las variables también significativas, además se puede nortar que la variable que más peso tiene es la salud.
+Con lo que el modelo ajustado sería: $\hat{Satisfaccion}=5.58 -0.012 Vivienda + 1.004Salud$ .Y como se puede notar con un $P_{value}=2.2e-16$ si tomamos un $α=0.05$ el modelo es altamente significativo, con todas las variables también significativas, además se puede nortar que la variable que más peso tiene es la salud.
 
 ### Verificando el modelo con la base de datos de validación
 
@@ -176,11 +177,11 @@ Utilizando la función predict del R, podemos saber el valor ajustado para cada 
 
 
 ```{r}
-datos_vl<- datos_vl[,c(2,3,4,6,8,9)]
+
 datos_vl$predict <- c(0)
 
 for (i in 1:nrow(datos_vl)) {
-  datos_vl$predict[i] <- as.numeric(predict(object = modelo,newdata = datos_vl[i,c(3:5)]))
+  datos_vl$predict[i] <- as.numeric(predict(object = modelo,newdata = datos_vl[i,c(3,5)]))
 }
 
 datos_vl$error <- c(0)
@@ -189,8 +190,8 @@ for (i in 1:nrow(datos_vl)) {
   datos_vl$error[i]<- (abs(datos_vl$predict[i]-datos_vl$Satisfaccion_composicion_hogar[i])/datos_vl$Satisfaccion_composicion_hogar[i])*100
 }
 datos_vl$clasificacion<- c(0)
-colnames(datos_vl)[6] <- "Respuesta"
-kable(head(datos_vl[,c(6,7,8)]),caption = "Tabla de los primeros datos ") %>%
+colnames(datos_vl)[8] <- "Respuesta"
+kable(head(datos_vl[,c(8,9,10)]),caption = "Tabla de los primeros datos ") %>%
   kable_classic()
 
 
@@ -203,7 +204,7 @@ Con lo cual podemos ver por ejemplo qué cantidad de sujetos tienen un error por
 length(which(datos_vl$error<25))
 ```
 
-Esto nos demuestra que nuestro modelo acierta de una muy buena manera teniendo en cuenta que el total de datos de validacion son 5643, lo que quiere decir que solo 1368 datos tienen un error por encima del 25%.
+Esto nos demuestra que nuestro modelo acierta de una muy buena manera teniendo en cuenta que el total de datos de validacion son 7367, lo que quiere decir que solo 1705 datos tienen un error por encima del 25%.
 
 Adicionalmente a esto, si queremos hacer intervalos de confianza para la predicción de la satisfacción, podemos clasificar qué valores reales están dentro de nuestro intervalo del 95% poniendo "Funciona" a los que están dentro y "No funciona" a los que caen por fuera de nuestro intervalo.
 
@@ -225,3 +226,126 @@ table(datos_vl$clasificacion)
 ```
 Con lo que se evidencia, que utilizando intervalos de confianza, acierta en absolutamente todo.
 
+
+## Modelo para los niños
+
+De igual manera como para los abuelos, buscamos en qué bases de datos habían más datos de niños menores de 13 años para utilizarlas en el modelo, las cuales son:
+
+* Educación
+* Tecnología
+* Trabajo infantil
+* Vivienda
+* Salud
+
+Teniendo en cuenta que los niños entre 0 y 13 años no responden ninguna pregunta de satisfacción, tomamos la variable de Satisfaccion dependiendo de qué tanto este niño tenga tiempo libre o trabaje por lo que tomamos la base de datos "Trabajo infantil" como variable de respuesta. Esto lo hicimos porque la explotción infantil hace que los niños trabajen en cosas que no son aptas para ellas por lo que no tienen una mejor calidad de vida.
+
+Con esto hay que tener en cuenta que cada niño se evaluó en una escala del 0 al 100 dependiendo su carga laboral. Si este niño tiene 0 pues no trabaja y asumimos que es un niño más satisfecho con su vida dado que a su edad un niño quiere divertirse. Así, nuestra base de datos queda de la siguiente forma: 
+
+```{r}
+#Uniendo todas las bases de datos en una sola para tener un mas facil manejos y emparejandolo.
+
+# educacion <- read.csv("SatisfaccionEducacionNinos.csv")
+# tecnologia <- read.csv("SatisfaccionTecnologianinos.csv")
+# trabajo_infantil <- read.csv("SatisfaccionTrabajoInfantil.csv")
+# vivienda <- read.csv("SatisfaccionViviendaNinos.csv")
+# salud <- read.csv("satistaccion_salud_ninos.csv")
+# 
+# educacion$id <- paste(educacion$DIRECTORIO,educacion$SECUENCIA_ENCUESTA,sep = "-")
+# tecnologia$id <- paste(tecnologia$DIRECTORIO,tecnologia$SECUENCIA_ENCUESTA,sep = "-")
+# trabajo_infantil$id <- paste(trabajo_infantil$DIRECTORIO,trabajo_infantil$SECUENCIA_ENCUESTA,sep = "-")
+# vivienda$id <- paste(vivienda$DIRECTORIO,vivienda$SECUENCIA_ENCUESTA,sep = "-")
+# salud$id <- paste(salud$DIRECTORIO,salud$SECUENCIA_ENCUESTA,sep = "-")
+# 
+# datos_modelo <- vivienda[,c(2,3,4)]
+# 
+# colnames(datos_modelo)[3] <- "Satisfaccion_vivienda"
+# 
+# for (i in 1:nrow(vivienda)) {
+#   indice <- which(vivienda$id[i]==educacion$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_educacion[i]<- educacion$Satisfaccion[i])
+# }
+# 
+# for (i in 1:nrow(vivienda)) {
+#   indice <- which(vivienda$id[i]==tecnologia$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_tecnologia[i]<- tecnologia$Satisfaccion[i])
+# }
+# 
+# for (i in 1:nrow(vivienda)) {
+#   indice <- which(vivienda$id[i]==trabajo_infantil$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_trabajo[i]<- trabajo_infantil$Satisfaccion[i])
+# }
+# 
+# for (i in 1:nrow(vivienda)) {
+#   indice <- which(vivienda$id[i]==salud$id)
+#   ifelse(indice>=1, yes = datos_modelo$Satisfaccion_salud[i]<- salud$Satisfaccion[i])
+# }
+
+
+datos_modelo<- read.csv("datos_modelo_ninos.csv")
+datos_modelo <- datos_modelo[,-1]
+kable(head(datos_modelo),caption = "<center> <strong> Base de datos para el modelo de los niños</strong> <center>") %>%
+  kable_classic_2() %>%
+  scroll_box(width = "100%",height = "300px")
+```
+
+### Creación modelo para los niños
+
+Para lo que primero vamos a separar los datos en 2, datos de entrenamiento y datos de validacion. Y con estos datos vamos a construir el primer modelo para los niños que sería de la forma $Satisfaccion = B_0 + B_1 Tecnologia + B_2 Salud + B_3 Educacion + B4 Vivienda$
+```{r}
+p_val <- 0.20
+n_datos <- dim(datos_modelo)[1] # cantidad de observaciones
+n_val <- p_val*n_datos # cantidad de observaciones para validación
+set.seed(set.seed(12345))
+ix_vl <- sample(x = n_datos, size = n_val, replace = FALSE)
+
+
+datos_tr <- datos_modelo[-ix_vl,]
+
+datos_vl <- datos_modelo[ix_vl,]
+
+modelo <- lm(Satisfaccion_trabajo ~ Satisfaccion_tecnologia + Satisfaccion_salud + Satisfaccion_educacion + Satisfaccion_vivienda,data = datos_tr)
+
+summary(modelo)
+```
+
+Como podemos notar es un modelo bastante bueno ya que casi todas sus variables son significativas menos la Salud, con lo que hacemos lo mismo que con los abuelos, utilizando la tecnica stepwise mixto y valor matemático empleado para determinar la calidad del modelo va a ser Akaike(AIC).
+
+
+```{r}
+x<- step(object = modelo, direction = "both", trace = 1)
+x$call
+x$coefficients
+
+modelo <- lm(formula = Satisfaccion_trabajo ~ Satisfaccion_tecnologia + 
+    Satisfaccion_educacion + Satisfaccion_vivienda, data = datos_tr)
+```
+
+Y como lo sospechabamos, sale la variable salud dado que no era significante y el modelo ajustado sería de la forma: $\hat{Satisfaccion} = 99.748 + 0.043 Tecnología - 0.044 Educación + -0.008 Vivienda$
+
+### Verificando el modelo con los datos de validación
+
+Ahora con nuestro modelo ajustado podemos intentar predecir con los datos de validación. A continuacion utilizando los 8694 datos de validación, vamos a predecir sus valores y a calcular un error absoluto con respecto a el valor real.
+
+```{r}
+for (i in 1:nrow(datos_vl)) {
+  datos_vl$predict[i] <- as.numeric(predict(object = modelo,newdata = datos_vl[i,c(5,4,3)]))
+}
+
+
+for (i in 1:nrow(datos_vl)) {
+  datos_vl$error[i]<- (abs(datos_vl$predict[i]-datos_vl$Satisfaccion_trabajo[i])/datos_vl$Satisfaccion_trabajo[i])*100
+}
+
+colnames(datos_vl)[6] <- "Respuesta"
+kable(datos_vl[c(4:8),c(7,8,9)],caption = "Tabla de los primeros datos ") %>%
+  kable_classic()
+
+```
+
+Se puede observar a simplevista que este modelo ajusta mucho mejor los datos, para visualizar esto mejor podemos calcular la cantidad de niños a los que la predicción erró en menos del 10%
+
+```{r}
+length(which(datos_vl$error<10))
+
+```
+Y como podemos notar, el 89% de las predicciones tienen un error absoluto menor al 10% con lo que el modelo para los niños es muy acertado.
