@@ -8,12 +8,14 @@
 #
 
 library(shiny)
+library(shinythemes)
+library(bslib)
 load("ModeloAbuelos.Rdata")
 load("ModeloNinos.Rdata")
 
 
 # Define UI for application that draws a histogram
-ui <- navbarPage("Modelos de Satisfacción",
+ui <- navbarPage(theme = bs_theme(version = 4, bootswatch = "minty"),"Modelos de Satisfacción",
                  navbarMenu("Modelos",
                             tabPanel("Modelo Ninos",
                                      sidebarLayout(
@@ -78,15 +80,15 @@ ui <- navbarPage("Modelos de Satisfacción",
                           p("Cristian Rojas")
                           
                           ),
-                 # tabPanel("Explicacion modelo",
-                 #          fluidPage(
-                 #            column(10,
-                 #                   includeHTML("C:/Users/Kevin/Documents/TAE/Modelo.html")
-                 #                   )
-                 #            
-                 #          )
-                 #   
-                 # )
+                  tabPanel("Explicacion modelo",
+                           fluidPage(
+                             column(10,
+                                    includeHTML("Modelo.html")
+                                    )
+                             
+                           )
+                    
+                  )
                  
                  
 )
