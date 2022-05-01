@@ -1,0 +1,170 @@
+---
+title: 
+output: html_document
+---
+# Reporte Técnico 
+
+
+
+### Integrantes
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Kevin Danilo Arias Buitrago
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Santiago Carvajal Torres
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sebastián López Mazo
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Juan David Pino Ramírez
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Cristian Alejandro Rojas Mazo
+
+
+Este reporte técnico tiene el objetivo de fundamentar el trabajo realizado. Aquí se enfocará principalmente la fundamentación del problema de acuerdo a una literatura con bases y estudios. Se procederá luego a mostrar cómo se construyeron las variables predictivas, un análisis descriptivo y finalmente se compartirán los resultados obtenidos. 
+
+
+### Planteamiento del problema
+
+
+El problema que se ha identificado es la necesidad de determinar los niveles de satisfacción tanto de los “niños” como los “abuelos” según varios de los factores que influyen en su calidad de vida, por ello se ha decidido crear un modelo que sea capaz de medir el nivel de satisfacción de los niños y abuelos según la composición del hogar y otros determinantes. El insumo principal son los datos del DANE de la encuesta de calidad de vida. Según el documento Metodología Encuesta Nacional de Calidad de Vida:
+¨La Encuesta de Calidad de Vida (ECV) es una investigación que realiza el DANE, con el objeto de recoger información sobre diferentes aspectos y dimensiones del bienestar de los hogares, incluyendo aspectos como el acceso a bienes y servicios públicos, privados o comunales, salud, educación, cuidado de niños y niñas menores de 5 años, entre otros. Esta información posibilita efectuar análisis posteriores de los factores que explican los diferentes niveles de vida existentes en la sociedad.¨ Dane (2021)
+
+
+Primero se debe considerar a los interesados objetivo del problema, para el caso de los niños se basa en la ley 1098 de 2006. Esta dicta lo siguiente: ¨Se entiende por niño o niña, las personas entre los 0 y los 12 años de edad. Para los abuelos se ha decidido tomar la definición del ministerio de salud, esta dice lo siguiente: ¨Generalmente, una persona adulta mayor es una persona de 60 años o más de edad¨. Esto ha sido definido así porque se considera que actualmente la definición de abuelo puede ser muy subjetiva, ya que hay personas que pueden ser abuelos a los 30 años y otras a más de los 50, esto produce que el grupo de estudio de los abuelos pueda ser variado y poco concluyente, dado que los aspectos relacionados a la edad influyen considerablemente. También se sabe que esta decisión puede provocar incertidumbre a la hora de los resultados.
+
+
+Para llevar a cabalidad el objetivo del proyecto es necesario entender el concepto de satisfacción, Durán, M. Extremera, N. Montalban, M y Rey, L. (2005), mencionan que la Satisfacción Vital es la evaluación global que la persona hace de su vida, incluyendo el examen de los aspectos tangibles obtenidos, el equilibrio relativo entre aspectos positivos y negativos, comparaciones con un criterio elegido por ella y elaboración de un juicio cognitivo sobre su nivel de satisfacción, lo que nos da pie a evaluar aspectos tangibles como la vivienda y los ingresos, tanto como aspectos positivos y/o negativos como la salud y el hogar para intentar predecir o explicar el nivel de satisfacción de una persona. 
+
+
+En contraste, Bonavía, T. y Quintanilla, I. (1998), demuestran que ni el salario ni el nivel jerárquico tienen efectos claros sobre la satisfacción vital y que por el contrario abundan los resultados contradictorios lo que nos permite descartar datos como ingresos por hogar o consecuentes. Por otro lado, teniendo en cuenta la salud de las personas, Castro y Sánchez (2000) enuncian que: “a una mayor experiencia de salud física y psicológica existe una mayor percepción de satisfacción global con la vida también.” con que podemos interpretar que mientras mejor sea la percepción de la salud tanto física como psicológica podemos llegar a tener mayores niveles de satisfacción vital.
+
+Rohe, W. y Stegman, M. (1994) denotan en los resultados de su estudio que ser propietario de una vivienda tiene un efecto significativo en la satisfacción vital de las personas con bajos ingresos. Además los compradores de vivienda presentan niveles más altos de satisfacción vital, en comparación con los inquilinos. De hecho, entre las variables de la ecuación presentada en su estudio, la propiedad era la que más se relacionaba con la satisfacción vital, era más importante que la edad, los ingresos o las demás variables demográficas de la ecuación.
+
+Con base a los resultados obtenidos por Mauricio Ramírez, M y Lee, S (2012) las variables como enfermedades crónicas, importancia de la religión en la vida, situación de vivienda y situación de hogar pueden justificar la satisfacción vital de los adultos mayores a 60 años en un porcentaje bastante aceptable.
+
+Por parte de la tecnología se ha encontrado según María Cristina Ortiz León ¨Uno de los mayores beneficios que los usos de la computadora proporciona al adulto mayor es que lo ayuda a superar el miedo a la soledad y al aislamiento de sus familiares. En el ciberespacio aumenta su posibilidad de interactuar y su autonomía personal y social.̈ Según este mismo artículo se encontró que 
+¨los adultos hacen uso de las computadoras para adquirir nuevos conocimientos y elevar la autoestima; otras responden a necesidades más concretas, como prepararse para ayudar a sus hijos o nietos en sus estudios, conseguir un nuevo empleo o mantenerse en el actual. Una vez que dominan una computadora, la utilizan como herramienta de cálculo, escritura, comunicación, información de interés, aprendizaje continuo, entretenimiento. Además, a menudo visitan sitios de charla para encontrar nuevos amigos o intercambiar información sobre sus pasatiempos. Esto denota la importancia del acceso que tienen los adultos mayores a las redes sociales y diferentes medios tecnológicos como computadores y celulares. 
+
+
+En cuanto a los infantes enuncia UNICEF (2021) algunos estudios han descubierto que los niveles altos de satisfacción vital pueden tener relaciones recíprocas con el rendimiento académico en especial en edades tempranas lo que nos da a entender que factores académicos tienen un gran impacto a la hora de intentar predecir satisfacción vital en esta población. 
+Tal como se enuncia en la revista de economía aplicada la satisfacción respecto al trabajo por parte de los niños de Etiopía en el año 2001 apuntaba a que la mayoría de estos se sentía bien o que la satisfacción era elevada, sin embargo esto va en contraposición con la educación, mientras más nivel educativo presentaba el niño, menos satisfacción le producía trabajar, esto para trabajos no remunerados (prácticamente explotación) (Revista de economía aplicada, 2012), ahora, aunque este es de los pocos estudios enfocados en los actores principales de la problemática (los niños), este es impreciso y se tiende a analizar mejor el porqué se llegaron a estos resultados más que el análisis crudo de lo recopilado, pues resulta que los niños son altamente influenciados por otras personas, incluso por el humor que tengan al momento de la respuesta. Por lo que aunque el estudio tiene conclusiones muy acertadas y esperables como que la educación cambia la percepción frente a la explotación laboral o el abuso, el modelo derivado es poco aplicable debido al sesgo de la encuesta.
+
+
+
+### Resultados
+
+Los resultados obtenidos están divididos en 2 grupos, los resultados obtenidos para los niños y los resultados obtenidos para los abuelos. También se mostrará una validación con datos por fuera del tiempo. 
+
+#### Abuelos: 
+
+Para hacer el modelo de los abuelos se consideró usar las bases de datos de vivienda, salud, tecnología y educación. Se optó por el uso de un modelo de regresión lineal múltiple. 
+
+Se tomaron 5643 datos para la validación, estos equivalen a un 20% del total de los datos y se dejaron 22572 datos para el entrenamiento del modelo.
+
+
+![](img/picture1.png)
+
+
+  
+Luego se procedió a utilizar la técnica stepwise mixto para ver cuales son los mejores predictores. Se obtuvo lo siguiente: 
+
+![](img/picture2.png)
+
+Esto indica que el mejor modelo para interpretar la satisfacción de los abuelos tiene la forma: 
+
+
+$Satisfaccion = B_0+ B_1 * Vivienda + B_2 * Salud$
+
+
+
+
+Se procede con el ajuste del modelo.
+
+![](img/picture3.png)
+
+
+El modelo ajustado sería: 
+
+$\hat{Satisfaccion}=5.34 -0.014 Vivienda + 1.011Salud$
+
+Se puede notar con un Pvalue=2.2e−16 que sí tomamos un α=0.05 el modelo es altamente significativo, con todas las variables también significativas, además se puede notar que la variable que más peso tiene es la salud.
+
+Para hacer la verificación se usa la función predict de R, podemos saber el valor ajustado para cada abuelo y con esto podemos calcular el error absoluto que tiene cada sujeto como lo muestra el encabezado de dicha tabla:
+
+![](img/picture4.png)
+
+Aquí se puede ver por ejemplo qué cantidad de sujetos tienen un error por debajo del 25%, es decir que erran en máximo 25% con la respuesta verdadera.
+
+![](img/picture5.png)
+
+Esto nos demuestra que nuestro modelo acierta de una muy buena manera teniendo en cuenta que el total de datos de validación son 7367, lo que quiere decir que solo 1705 datos tienen un error por encima del 25%.
+Niños:
+Acorde al análisis descriptivo y la ingeniería de características las bases de datos tomadas como variables predictivas resultantes para construir el modelo de regresión son:
+
+* Educación
+
+* Tecnología
+
+* Trabajo infantil
+
+* Vivienda
+
+* Salud
+
+Teniendo en cuenta que los niños entre 0 y 13 años no responden ninguna pregunta de satisfacción, se asoció la variable de Satisfaccion dependiendo de qué tanto este niño tenga tiempo libre o trabaje por lo que la base de datos “Trabajo infantil” resulta ser una buena variable de respuesta debido al impacto significativo que tiene este ambito en la satisfaccion vital de los infantes.
+
+Con esto hay que tener en cuenta que cada niño se evaluó en una escala del 0 al 100 dependiendo su carga laboral. Si un niño tiene 0 pues no trabaja y se asume que es un niño más satisfecho con su vida dado que a su edad un niño quiere divertirse. Así, la base de datos resultante queda de la siguiente forma:
+
+![](img/picture6.png)
+
+Teniendo en cuenta	las variables predictivas se construyó en primera instancia el modelo de regresión lineal:
+
+$Satisfaccion = B_0 + B_1 Tecnologia + B_2 Salud + B_3 Educacion + B4 Vivienda$
+
+![](img/picture7.png)
+
+
+Al analizar el resumen del modelo, se observó que casi todas sus variables son significativas a excepción de la variable salud asi que se optó por implementar la técnica stepwise mixto y valor matemático empleado para determinar la calidad del modelo va a ser Akaike(AIC).
+
+![](img/picture8.png)
+
+Como en cuanto a significancia la variable predictiva salud resultó ser poco significativa, por ende se construyó un modelo excluyendo esta variable y se obtuvieron los siguientes parámetros:
+
+$\hat{Satisfaccion} = 99.748 + 0.043 Tecnología - 0.044 Educación + -0.008 Vivienda$
+
+Utilizando los datos de validación se predijo la satisfacción y se calculó el error absoluto respecto al valor real, a continuación se enuncian los primeros 5 registros
+
+![](img/picture9.png)
+
+
+Se observó que este modelo ajusta mucho mejor los datos, puesto que el 89% de las predicciones tienen un error absoluto menor al 10% asi que  que el modelo para los niños es muy acertado.
+
+
+### Referencias
+
+* DANE. (2009). Metodología Encuesta Nacional de Calidad de Vida, de https://www.dane.gov.co/files/investigaciones/fichas/ECV.pdf 
+
+* Durán,M. Extremera, N. Montalban, M y Rey,L. (2005). Engagement y Burnout en el ámbito docente: Análisis de sus relaciones con la satisfacción laboral y vital en una muestra de profesores. Revista de Psicología del Trabajo y de las Organizaciones, de https://www.redalyc.org/articulo.oa?id=231317039009
+
+* Bonavía, T. y Quintanilla, I. (1998). El efecto de los ingresos, el nivel jerárquico, la cultura empresarial y las creencias de los directivos sobre su satisfacción vital. Revista de Psicología del Trabajo y de las Organizaciones - 1998 volumen 14, n.º 2 - Págs. 217-231. de https://journals.copmadrid.org/jwop/files/43201.pdf
+
+* Castro, A. y Sánchez, M. (2000) Objetivos de vida y satisfacción autopercibida en estudiantes universitarios. de https://www.psicothema.com/pdf/257.pdf 
+
+* Rohe, W. Stegman, M. (1994). The Effects of Homeownership on the Self-Esteem, Perceived Control and Life Satisfaction of Low-Income People. JOURNAL- AMERICAN PLANNING ASSOCIATION. 1994;60(2):173. Accessed May 1, 2022.  de https://search-ebscohost-com.ezproxy.unal.edu.co/login.aspx?direct=true&db=edsbl&AN=EN016027364&lang=es&site=eds-live 
+
+* Ramírez, M. y Lee, S. (2013). Factores asociados a la satisfacción vital en adultos mayores de 60 años. Polis [En línea], de http://journals.openedition.org/polis/8594  
+
+* Ortiz, M. (2007). La informática y el adulto mayor, de https://www.uv.mx/cienciahombre/revistae/vol20num3/articulos/informatica/
+UNICEF. (2021). Understanding child subjective well-being: A call for more data, research and policymaking targeting children, de https://www.unicef.org/globalinsight/media/2116/file/UNICEF-Global-Insight-Understanding-Child-Subjective-Wellbeing-2021.pdf
+
+* Gamero, C. y Lassibille G. (2012). Escolarización, trabajo infantil y satisfacción laboral: evidencia para etiopía. Revista de Economía Aplicada, vol. XX, núm. 58, 2012, pp. 95-118. de https://www.redalyc.org/pdf/969/96924442004.pdf
+
+
+### Conclusiones y recomendaciones  
+
+* A partir de la investigacion realizada podemos concluir que la satisfacción vital se ve afectada por factores aparentemente externos como la vivienda, la salud, educacción y tecnología tanto positiva como negativamente.
+
+* El modelo de regresión lineal multiple no fue el mejor modelo para tratar de predecir puesto que los parametros $B_n$ son bastante bajos en el caso del modelo para los niños en comparacion con el intercepto.
+
+* Las bases de datos utilizadas presentaron muchas problemáticas al hora de realizar pre-procesamiento y análisis como por ejemplo la correlación entre variables o entre indices de bases, ademas la ausencia de una variable satisfaccion verdadera en el caso de los niños complica bastante el desarrollo de un modelo coherente y eficiente.
+
+* Se recomienda distribuir los valores de significancia de una manera diferente ya sea reasignando valores o empleando un tipo de modelo de predicción.

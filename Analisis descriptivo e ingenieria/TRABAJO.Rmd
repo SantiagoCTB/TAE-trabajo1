@@ -1,0 +1,1411 @@
+---
+title: "Depuración de los datos y Creación de variables de utilidad para el modelo de predicción"
+author: "E"
+date: "12/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r reading_databases}
+
+#Carga de algunos de los datasets incluidos en la investigación
+
+library(readr)
+tenencia_financiacion <- read_delim("Tenencia y financiación de la vivienda que ocupa el hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+servicios_hogar <- read_delim("Servicios del hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+Datos_vivienda <- read_delim("Datos de la vivienda.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+Caract_hogar <- read_delim("Características y composición del hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r Selecting_variables}
+
+#Selección de las variables con los que se trabajaron las bases de datos de datos vivienda, servicios del hogar y tenencia y financiación.
+
+datos_vivienda <- subset(Datos_vivienda, select=c("DIRECTORIO","SECUENCIA_ENCUESTA","P2102","P3156","P1070","P8520S1","P8520S5","P8520S3","P8520S4","P5661S4","P5661S6","P3158","P3159S2"))
+
+servicios_hogar <- subset(servicios_hogar, select=c("DIRECTORIO","SECUENCIA_ENCUESTA","P5000","P5010","P5018","P5666","P8526","P3164","P5030","P1892","P1892S1","P1892S2","P1892S3","P1892S4","P3165","P5041","P5038","P792","P8530","P5047","P3166","P3167","P3168","P5069","P8534","P3169S1","P3169S2","P3169S3","P3169S4","P8536","P3173","P3174","P3174S1","P3174S2","P3174S3","P3174S4","P3174S5","I_HOGAR","I_UGASTO"))
+
+
+tenencia_financiacion <- subset(tenencia_financiacion,select=c("DIRECTORIO","SECUENCIA_ENCUESTA","P5095","P5100","P5140"))
+  
+```
+
+### Creación base de datos para saber la edad, directorio (casa) y secuencia de los niños y abuelos
+
+```{r Niños y adultos, include=FALSE}
+Posicion_niños <- which(Caract_hogar[,10]<=12) # Buscar índice de los niños menores de 12
+
+#setequal(Caract_hogar[,2],Caract_hogar[,4]) ## VER SI SECUENCIA Y ORDEN ES LO MISMO.
+
+niños <- data.frame() 
+for (i in 1:length(Posicion_niños)) {
+  
+  niños[i,1]<- Caract_hogar[Posicion_niños[i],10]
+  niños[i,2]<- Caract_hogar[Posicion_niños[i],1]
+  niños[i,3]<- Caract_hogar[Posicion_niños[i],2]
+}
+
+write.csv(niños,"datos_niños.csv",row.names=FALSE)
+
+Posicion_abuelos <- which(Caract_hogar[,10]>=60)  #Busca indice de los mayores de 60 (abuelos según definición)
+
+abuelos <- data.frame() 
+for (i in 1:length(Posicion_abuelos)) {
+  
+  abuelos[i,1]<- Caract_hogar[Posicion_abuelos[i],10]
+  abuelos[i,2]<- Caract_hogar[Posicion_abuelos[i],1]
+  abuelos[i,3]<- Caract_hogar[Posicion_abuelos[i],2]
+}
+
+write.csv(abuelos,"datos_abuelos.csv",row.names = FALSE)
+
+
+```
+
+```{r}
+
+
+files <- (Sys.glob("*.csv"))
+
+Caract_hogar <- read_delim("Características y composición del hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+listOfFiles <- lapply(files, function(x) read.table(x, header = TRUE,sep = ";")) 
+
+Quien_responde <- data.frame()
+
+for (i in 1:15) {
+  
+  if (length(table(listOfFiles[[i]]$SECUENCIA_ENCUESTA))==1) {
+    Quien_responde[i,1]<- "RESPONDE CABEZA FAMILIA"
+    
+  } else {
+    Quien_responde[i,1]<- "RESPONDEN TODOS"
+  }
+  
+}
+
+```
+### ver qué encuestas responden los niños
+
+```{r}
+datos_ninos <- read_csv("datos_niños.csv")
+datos_abuelos <- read_csv("datos_abuelos.csv")
+datos_ninos$id <- paste(datos_ninos$DIRECTORIO,datos_ninos$SECUENCIA_ENCUESTA,sep = "-")
+x <- as.character(datos_ninos[1,4])
+
+for(i in 1:15){
+
+  listOfFiles[[i]]$id <- paste(listOfFiles[[i]]$ï..DIRECTORIO,listOfFiles[[i]]$SECUENCIA_ENCUESTA,sep = "-")
+  
+}
+
+for (i in 1:15) {
+  h<- as.character(files[i])
+  datos_ninos[,h] <- 0
+  
+  for(j in 1:nrow(datos_ninos)){
+    x <- as.character(datos_ninos[j,4])
+    z <- which(listOfFiles[[i]]$id==x)
+    datos_ninos[j,i+4] <- z[1]
+    
+  }
+}
+
+  
+```
+
+
+## Guardando la base de datos con los indices
+```{r}
+write.csv(datos_ninos,"datos_ninos_indices.csv",row.names = FALSE)
+```
+
+Viendo los NA
+
+```{r}
+sum(is.na(datos_ninos[,5]))
+
+```
+
+datos encontrados de niños en cada base de datos
+
+caracteristicas y composición del hogar :                                                56428
+
+"Condiciones de vida del hogar y tenencia de bienes (programas).csv"                     9            
+"Condiciones de vida del hogar y tenencia de bienes programas.csv"                       1231            
+"Condiciones de vida del hogar y tenencia de bienes.csv"                                 214            
+"Datos de la vivienda.csv"                                                               0            
+"Educación.csv"                                                                          36473            
+"Fuerza de trabajo.csv"                                                                  5157            
+"Gastos de los hogares (Gastos por Item).csv"                                            48044            
+"Gastos de los hogares (lugares de compra).csv"                                          214            
+"Salud.csv"                                                                              56428            
+"Servicios del hogar.csv"                                                                214            
+"Tecnologías de información y comunicación.csv"                                          36473            
+"Tenencia y financiación de la vivienda que ocupa el hogar (escritura personas).csv"     104
+"Tenencia y financiación de la vivienda que ocupa el hogar.csv"                          214
+"Trabajo infantil.csv"                                                                   31501
+
+
+
+## Ahora para los abuelos.
+
+```{r}
+
+datos_abuelos$id <- paste(datos_abuelos$DIRECTORIO,datos_abuelos$SECUENCIA_ENCUESTA,sep = "-")
+
+
+for (i in 1:15) {
+  h<- as.character(files[i])
+  datos_ninos[,h] <- 0
+  
+  for(j in 1:nrow(datos_abuelos)){
+    x <- as.character(datos_abuelos[j,4])
+    z <- which(listOfFiles[[i]]$id==x)
+    datos_abuelos[j,i+4] <- z[1]
+    
+  }
+}
+write.csv(datos_abuelos,"datos_abuelos_indices.csv",row.names = FALSE)
+```
+
+Datos encontrados para los abuelos en cada base de datos.
+
+caracteristicas y composición del hogar :                                                36839
+"Condiciones de vida del hogar y tenencia de bienes (programas).csv"                     581        
+"Condiciones de vida del hogar y tenencia de bienes programas.csv"                       1678           
+"Condiciones de vida del hogar y tenencia de bienes.csv"                                 23387          
+"Datos de la vivienda.csv"                                                               23290        
+"Educación.csv"                                                                          36839            
+"Fuerza de trabajo.csv"                                                                  36839           
+"Gastos de los hogares (Gastos por Item).csv"                                            34615            
+"Gastos de los hogares (lugares de compra).csv"                                          23387          
+"Salud.csv"                                                                              36839            
+"Servicios del hogar.csv"                                                                23387          
+"Tecnologías de información y comunicación.csv"                                          36839            
+"Tenencia y financiación de la vivienda que ocupa el hogar (escritura personas).csv"     2693
+"Tenencia y financiación de la vivienda que ocupa el hogar.csv"                          23387
+"Trabajo infantil.csv"                                                                   11
+
+
+
+Creación de la satisfacción vivienda para niños.
+
+```{r}
+
+## Creación del índice de 0 a 100 de niños y abuelos para la satisfacción vivienda.
+
+datos_ninos_indices <- read_csv("datos_ninos_indices.csv")
+
+for (i in 1:nrow(datos_ninos_indices)) {
+  SatisfaccionVivienda <-c(0)
+  
+  direc_nino <- as.numeric(datos_ninos_indices[i,2])
+  indice <- as.numeric(which(datos_vivienda[,1]==direc_nino))
+  
+  
+  if(datos_vivienda[indice,3] == "4"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  }
+  if(datos_vivienda[indice,3] == "3"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 6.06
+  }
+  if(datos_vivienda[indice,3] == "2"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 3.03
+  } else {
+    SatisfaccionVivienda <- SatisfaccionVivienda +0
+    
+  }
+  
+  #ANDEN
+  ifelse(datos_vivienda[indice,4] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  ##VIVIENDA TIPO
+  if(datos_vivienda[indice,5] =="1" || datos_vivienda[indice,5] =="2" ){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  }
+  
+  if (datos_vivienda[indice,5] =="3" || datos_vivienda[indice,5] =="4" ) {
+    SatisfaccionVivienda <- SatisfaccionVivienda + 4.54
+  } else {
+    SatisfaccionVivienda <- SatisfaccionVivienda
+  }
+  
+  
+  # ENERGIA
+  
+ifelse(datos_vivienda[indice,6] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  # Acueducto
+  
+ifelse(datos_vivienda[indice,7] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  #ALCANTARILLADO
+  
+ifelse(datos_vivienda[indice,8] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  # RECOLECCION BASURAS
+  
+  ifelse(datos_vivienda[indice,9] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  ##Contaminacion 
+  
+  if(datos_vivienda[indice,10] == "1"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  } 
+  if(datos_vivienda[indice,10] == "2"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 6.06
+  }
+  if(datos_vivienda[indice,10] == "3"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 3.03
+  }
+  else{
+    SatisfaccionVivienda <- SatisfaccionVivienda 
+  }
+  
+  ## PRESENCIA ANIMALES MOLESTIA
+  
+  if(datos_vivienda[indice,11] == "1"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  } 
+  if(datos_vivienda[indice,11] == "2"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 6.06
+  }
+  if(datos_vivienda[indice,11] == "3"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 3.03
+  }
+  else{
+    SatisfaccionVivienda <- SatisfaccionVivienda 
+  }
+  
+  #gotera
+  ifelse(datos_vivienda[indice,12] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  #grietas
+  ifelse(datos_vivienda[indice,13] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  datos_ninos_indices[i,20] <- SatisfaccionVivienda
+}
+```
+
+
+
+Creación de la satisfacción vivienda para los abuelos
+
+```{r}
+datos_abuelos_indices <- read_csv("datos_abuelos_indices.csv")
+
+for (i in 1:nrow(datos_abuelos_indices)) {
+  SatisfaccionVivienda <-c(0)
+  
+  direc_abue <- as.numeric(datos_abuelos_indices[i,2])
+  indice <- as.numeric(which(datos_vivienda[,1]==direc_abue))
+  
+  
+  if(datos_vivienda[indice,3] == "4"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  }
+  if(datos_vivienda[indice,3] == "3"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 6.06
+  }
+  if(datos_vivienda[indice,3] == "2"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 3.03
+  } else {
+    SatisfaccionVivienda <- SatisfaccionVivienda +0
+    
+  }
+  
+  #ANDEN
+  ifelse(datos_vivienda[indice,4] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  ##VIVIENDA TIPO
+  if(datos_vivienda[indice,5] =="1" || datos_vivienda[indice,5] =="2" ){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  }
+  
+  if (datos_vivienda[indice,5] =="3" || datos_vivienda[indice,5] =="4" ) {
+    SatisfaccionVivienda <- SatisfaccionVivienda + 4.54
+  } else {
+    SatisfaccionVivienda <- SatisfaccionVivienda
+  }
+  
+  
+  # ENERGIA
+  
+ifelse(datos_vivienda[indice,6] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  # Acueducto
+  
+ifelse(datos_vivienda[indice,7] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  #ALCANTARILLADO
+  
+ifelse(datos_vivienda[indice,8] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  # RECOLECCION BASURAS
+  
+  ifelse(datos_vivienda[indice,9] == "1",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  ##Contaminacion 
+  
+  if(datos_vivienda[indice,10] == "1"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  } 
+  if(datos_vivienda[indice,10] == "2"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 6.06
+  }
+  if(datos_vivienda[indice,10] == "3"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 3.03
+  }
+  else{
+    SatisfaccionVivienda <- SatisfaccionVivienda 
+  }
+  
+  ## PRESENCIA ANIMALES MOLESTIA
+  
+  if(datos_vivienda[indice,11] == "1"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 9.09
+  } 
+  if(datos_vivienda[indice,11] == "2"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 6.06
+  }
+  if(datos_vivienda[indice,11] == "3"){
+    SatisfaccionVivienda <- SatisfaccionVivienda + 3.03
+  }
+  else{
+    SatisfaccionVivienda <- SatisfaccionVivienda 
+  }
+  
+  #gotera
+  ifelse(datos_vivienda[indice,12] == "2",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  #grietas
+  ifelse(datos_vivienda[indice,13] == "2",SatisfaccionVivienda <- SatisfaccionVivienda + 9.09,SatisfaccionVivienda)
+
+  
+  datos_abuelos_indices[i,20] <- SatisfaccionVivienda
+}
+
+
+write.csv(datos_abuelos_indices,file = "SatisfaccionViviendaAbuelos.csv")
+write.csv(datos_ninos_indices,file = "SatisfaccionViviendaNinos.csv")
+
+```
+
+
+Creación de la variable ssatisfacción dentro de la base de datos donde solo hay niños de 5 años, sin ambergo al final se optó por uno usar está base debido a la baja correlación.
+
+```{r}
+## Creación del índice para los niños de 0 a 5 años con la base atención integral de los niños y niñas menores a 5 años
+library(readr)
+datos_ninos_indices <- read_csv("datos_ninos_indices.csv")
+
+datos_menores <- 0
+indice_menores <- which(datos_ninos_indices[,1]<=5)
+datos_menores <- datos_ninos_indices[indice_menores,]
+datos_menores <- datos_menores[,c(1,2,3,4)]
+
+atencion <- read_delim("D:/Desktop/TAE/ENTREGA 1/Atencion integral de los niños y niñas menores de 5 años.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+atencion$id <- paste(atencion$DIRECTORIO,atencion$SECUENCIA_ENCUESTA,sep = "-")
+datos_menores$atencion <- 0
+for (i in 1:nrow(datos_menores)) {
+  
+  contador <- 100
+  
+  indice <- which(datos_menores$id[i]==atencion$id) ##Busca en qué lugar de la base atención está el niño.
+  
+  ifelse(atencion$P51[indice]>=5,yes = contador <- contador - 25,no = 0)
+  
+  ifelse(atencion$P772[indice]!=6,yes = contador <- contador - 25,no = 0)
+  
+  ifelse(atencion$P55[indice]==2,yes = contador <- contador - 25,no = 0)
+
+  ifelse(atencion$P775[indice]==2,yes = contador <- contador - 25,no = 0)
+
+  
+  datos_menores$atencion[i] <- contador
+}
+
+satistaccion_salud_ninos <- read_csv("D:/Desktop/TAE/ENTREGA 1/MODELO/satistaccion_salud_ninos.csv")
+satistaccion_salud_ninos$id <- paste(satistaccion_salud_ninos$DIRECTORIO,satistaccion_salud_ninos$SECUENCIA_ENCUESTA,sep = "-")
+
+
+for (i in 1:nrow(datos_menores)) {
+  
+  indice <- which(datos_menores$id[i]==satistaccion_salud_ninos$id)
+  ifelse(indice>0,yes = datos_menores$salud[i] <- satistaccion_salud_ninos$Satisfaccion[indice],no=0)
+
+}
+
+write.csv(datos_menores,"datos_menores_5.csv")
+
+```
+
+
+
+# Creación de la variable satisfacción Para las bases de datos seleccionadas.
+
+De forma general, se debe tener en cuenta que la mayoría de bases de datos contaban con variables categóricas que no nos decían mucho, por lo que se optó luego de la depuración de cada base, crear una variable "satisfacción" la cual se ve afectada de forma positiva o negativa por las variables categóricas escogidas para trabajar, esta escogencia de las variables y el puntaje de cada uno de los valores categóricos se hizo por medio de investigación.
+
+
+
+## Creación de la variable satisfacción para el dataset de salud para niños y abuelos.
+```{r}
+
+#lectura de los datasets a utilizar 
+library(readr)
+datos_ninos_indices <- read_delim("indices_ninos.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+#View(indices_ninos)
+
+
+datos_abuelos_indices <- read_delim("indices_abuelos.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+#View(indices_ninos)
+
+Salud <- read_delim("Salud.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r}
+#Compsición de las bases de datos para que solo queden los registros utilizados.
+
+salud_abuelos <- merge(x=datos_abuelos_indices,y=Salud,by=c("SECUENCIA_ENCUESTA","DIRECTORIO","SECUENCIA_P"))
+salud_ninos <- merge(x=datos_ninos_indices,y=Salud,by=c("SECUENCIA_ENCUESTA","DIRECTORIO","SECUENCIA_P"))
+```
+
+```{r}
+#Selección de variables para trabajar. 
+
+library(dplyr)
+Dsalud_abuelos <- select(salud_abuelos, DIRECTORIO, SECUENCIA_ENCUESTA, SECUENCIA_P,  P6090, P6100, P6181, P6127, P1930, P1906S1, P1906S2, P1906S3, P1906S4, P1906S5, P1906S6, P1906S7, P1906S8, P1909S1, P1909S2, P1909S3, P1909S4, P8573, P8575, P6153, P8554, P6149, P3186, P3186S1, P3008, P6133, P1708S1)
+
+
+Dsalud_ninos <- select(salud_ninos, DIRECTORIO, SECUENCIA_ENCUESTA, SECUENCIA_P, P6090, P6100, P6181, P6127, P1930, P1906S1, P1906S2, P1906S3, P1906S4, P1906S5, P1906S6, P1906S7, P1906S8, P1909S1, P1909S2, P1909S3, P1909S4, P8573, P8575, P6153, P8554, P6149, P3186, P3186S1, P3008, P6133, P1708S1)
+```
+
+```{r}
+
+#asignación de pesos bajo criterio propio y basado en literatura pertinente.
+
+for (i in 1:nrow(Dsalud_abuelos)){
+  count <- 50
+  ifelse(Dsalud_abuelos[i,3]==1,count<-count+3,count)   #6090
+  ifelse(Dsalud_abuelos[i,3]==2,count<-count-2,count)
+  
+  ifelse(Dsalud_abuelos[i,4]==1,count<-count+3,count)    #6100
+  ifelse(Dsalud_abuelos[i,4]==2,count<-count+2,count)
+  ifelse(Dsalud_abuelos[i,4]==3,count<-count+1,count)
+  
+  ifelse(Dsalud_abuelos[i,5]==1,count<-count+3,count)   #6181
+  ifelse(Dsalud_abuelos[i,5]==2,count<-count+1,count)
+  ifelse(Dsalud_abuelos[i,5]==3,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,5]==4,count<-count-2,count)
+  
+  ifelse(Dsalud_abuelos[i,6]==1,count<-count+3,count)   #6127
+  ifelse(Dsalud_abuelos[i,6]==2,count<-count+2,count)
+  ifelse(Dsalud_abuelos[i,6]==3,count<-count-2,count)
+  ifelse(Dsalud_abuelos[i,6]==4,count<-count-3,count)
+  
+  ifelse(Dsalud_abuelos[i,7]==1,count<-count-2,count)  #1930
+  ifelse(Dsalud_abuelos[i,7]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,8]==1,count<-count-2,count) #1906S1
+  ifelse(Dsalud_abuelos[i,8]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,8]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,8]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,9]==1,count<-count-2,count) #1906S2
+  ifelse(Dsalud_abuelos[i,9]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,9]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,9]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,10]==1,count<-count-2,count) #1906S3
+  ifelse(Dsalud_abuelos[i,10]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,10]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,10]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,11]==1,count<-count-2,count) #1906S4
+  ifelse(Dsalud_abuelos[i,11]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,11]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,11]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,12]==1,count<-count-2,count) #1906S5
+  ifelse(Dsalud_abuelos[i,12]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,12]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,12]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,13]==1,count<-count-2,count) #1906S6
+  ifelse(Dsalud_abuelos[i,13]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,13]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,13]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,14]==1,count<-count-2,count) #1906S7
+  ifelse(Dsalud_abuelos[i,14]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,14]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,14]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,15]==1,count<-count-2,count) #1906S8
+  ifelse(Dsalud_abuelos[i,15]==2,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,15]==3,count<-count-0.5,count)
+  ifelse(Dsalud_abuelos[i,15]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,16]==1,count<-count-2,count) #1909S1
+  ifelse(Dsalud_abuelos[i,16]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,17]==1,count<-count-2,count) #1909S2
+  ifelse(Dsalud_abuelos[i,17]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,18]==1,count<-count-2,count) #1909S3
+  ifelse(Dsalud_abuelos[i,18]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_abuelos[i,19]==1,count<-count-3,count) #1909S4
+  ifelse(Dsalud_abuelos[i,19]==2,count<-count+3,count)
+  
+  ifelse(Dsalud_abuelos[i,20]==1,count<-count+2,count) #8573
+  ifelse(Dsalud_abuelos[i,20]==2,count<-count-2,count)
+  
+  ifelse(Dsalud_abuelos[i,21]==2,count<-count-1,count) #8575
+  
+  ifelse(Dsalud_abuelos[i,22]==2,count<-count-1,count) #6153
+  ifelse(Dsalud_abuelos[i,22]==6,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,22]==12,count<-count-1,count)
+  
+  ifelse(Dsalud_abuelos[i,23]==1,count<-count+2,count)   #8554
+  ifelse(Dsalud_abuelos[i,23]==2,count<-count+1,count)
+  ifelse(Dsalud_abuelos[i,23]==3,count<-count-1,count)
+  ifelse(Dsalud_abuelos[i,23]==4,count<-count-2,count)
+  
+  ifelse(Dsalud_abuelos[i,24]==6,count<-count-1,count) #6149
+  
+  ifelse(Dsalud_abuelos[i,25]==1,count<-count-1,count) #3186
+  
+  ifelse(Dsalud_abuelos[i,27]==1,count<-count-3,count) #3008
+  ifelse(Dsalud_abuelos[i,27]==2,count<-count+4,count)
+  
+  ifelse(Dsalud_abuelos[i,28]==1,count<-count-3,count) #6133
+  ifelse(Dsalud_abuelos[i,28]==2,count<-count+3,count)
+  
+  ifelse(Dsalud_abuelos[i,29]<18,count<-count-1,count) #1708S1
+  ifelse(Dsalud_abuelos[i,29]>2,count<-count-1,count)
+  
+  
+Dsalud_abuelos[i,30]<-count
+}
+colnames(Dsalud_abuelos)[30] <-"Satisfaccion"
+
+write.csv(Dsalud_abuelos[,30],file="Abuelos_satis.csv")
+```
+
+```{r}
+
+satis_salud_abuelos <- select(Dsalud_abuelos,SECUENCIA_ENCUESTA,DIRECTORIO,SECUENCIA_P,Satisfaccion)
+write.csv(satis_salud_abuelos,file = "satistaccion_salud_abuelos.csv")
+```
+
+```{r}
+for (i in 1:nrow(Dsalud_ninos)){
+  count <- 50
+  ifelse(Dsalud_ninos[i,3]==1,count<-count+3,count)   #6090
+  ifelse(Dsalud_ninos[i,3]==2,count<-count-2,count)
+  
+  ifelse(Dsalud_ninos[i,4]==1,count<-count+3,count)    #6100
+  ifelse(Dsalud_ninos[i,4]==2,count<-count+2,count)
+  ifelse(Dsalud_ninos[i,4]==3,count<-count+1,count)
+  
+  ifelse(Dsalud_ninos[i,5]==1,count<-count+3,count)   #6181
+  ifelse(Dsalud_ninos[i,5]==2,count<-count+1,count)
+  ifelse(Dsalud_ninos[i,5]==3,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,5]==4,count<-count-2,count)
+  
+  ifelse(Dsalud_ninos[i,6]==1,count<-count+3,count)   #6127
+  ifelse(Dsalud_ninos[i,6]==2,count<-count+2,count)
+  ifelse(Dsalud_ninos[i,6]==3,count<-count-2,count)
+  ifelse(Dsalud_ninos[i,6]==4,count<-count-3,count)
+  
+  ifelse(Dsalud_ninos[i,7]==1,count<-count-2,count)  #1930
+  ifelse(Dsalud_ninos[i,7]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,8]==1,count<-count-2,count) #1906S1
+  ifelse(Dsalud_ninos[i,8]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,8]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,8]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,9]==1,count<-count-2,count) #1906S2
+  ifelse(Dsalud_ninos[i,9]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,9]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,9]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,10]==1,count<-count-2,count) #1906S3
+  ifelse(Dsalud_ninos[i,10]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,10]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,10]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,11]==1,count<-count-2,count) #1906S4
+  ifelse(Dsalud_ninos[i,11]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,11]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,11]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,12]==1,count<-count-2,count) #1906S5
+  ifelse(Dsalud_ninos[i,12]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,12]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,12]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,13]==1,count<-count-2,count) #1906S6
+  ifelse(Dsalud_ninos[i,13]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,13]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,13]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,14]==1,count<-count-2,count) #1906S7
+  ifelse(Dsalud_ninos[i,14]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,14]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,14]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,15]==1,count<-count-2,count) #1906S8
+  ifelse(Dsalud_ninos[i,15]==2,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,15]==3,count<-count-0.5,count)
+  ifelse(Dsalud_ninos[i,15]==4,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,16]==1,count<-count-2,count) #1909S1
+  ifelse(Dsalud_ninos[i,16]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,17]==1,count<-count-2,count) #1909S2
+  ifelse(Dsalud_ninos[i,17]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,18]==1,count<-count-2,count) #1909S3
+  ifelse(Dsalud_ninos[i,18]==2,count<-count+2,count)
+  
+  ifelse(Dsalud_ninos[i,19]==1,count<-count-3,count) #1909S4
+  ifelse(Dsalud_ninos[i,19]==2,count<-count+3,count)
+  
+  ifelse(Dsalud_ninos[i,20]==1,count<-count+2,count) #8573
+  ifelse(Dsalud_ninos[i,20]==2,count<-count-2,count)
+  
+  ifelse(Dsalud_ninos[i,21]==2,count<-count-1,count) #8575
+  
+  ifelse(Dsalud_ninos[i,22]==2,count<-count-1,count) #6153
+  ifelse(Dsalud_ninos[i,22]==6,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,22]==12,count<-count-1,count)
+  
+  ifelse(Dsalud_ninos[i,23]==1,count<-count+2,count)   #8554
+  ifelse(Dsalud_ninos[i,23]==2,count<-count+1,count)
+  ifelse(Dsalud_ninos[i,23]==3,count<-count-1,count)
+  ifelse(Dsalud_ninos[i,23]==4,count<-count-2,count)
+  
+  ifelse(Dsalud_ninos[i,24]==6,count<-count-1,count) #6149
+  
+  ifelse(Dsalud_ninos[i,25]==1,count<-count-1,count) #3186
+  
+  ifelse(Dsalud_ninos[i,27]==1,count<-count-3,count) #3008
+  ifelse(Dsalud_ninos[i,27]==2,count<-count+4,count)
+  
+  ifelse(Dsalud_ninos[i,28]==1,count<-count-3,count) #6133
+  ifelse(Dsalud_ninos[i,28]==2,count<-count+3,count)
+  
+  ifelse(Dsalud_ninos[i,29]<18,count<-count-1,count) #1708S1
+  ifelse(Dsalud_ninos[i,29]>2,count<-count-1,count)
+  
+  
+  
+  
+Dsalud_ninos[i,30]<-count
+}
+colnames(Dsalud_ninos)[30] <-"Satisfaccion"
+
+write.csv(Dsalud_ninos[,30],file="Ninos_satis.csv")
+```
+
+
+
+## Creación de la variable satisfacción para los datasets de trabajo infantil y tecnologías de información y comunicación para niños y abuelos.
+
+```{r}
+Trabajo_infantil <- read_delim("Trabajo infantil.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+
+Tecnologia <- read_delim("Tecnologías de información y comunicación.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r}
+Datos_cruzados_trabajo_infantil <- merge(x = datos_ninos_indices, y = Trabajo_infantil, by = c("DIRECTORIO", "SECUENCIA_ENCUESTA"))
+
+Datos_cruzados_tecnologia_abuelos <- merge(x = datos_abuelos_indices, y = Tecnologia, by = c("DIRECTORIO", "SECUENCIA_ENCUESTA"))
+
+Datos_cruzados_tecnologia_ninos <- merge(x = datos_ninos_indices, y = Tecnologia, by = c("DIRECTORIO", "SECUENCIA_ENCUESTA"))
+```
+
+```{r}
+#Seleccion variables
+library(dplyr)
+trabajo_infantil_var <- select(Datos_cruzados_trabajo_infantil, DIRECTORIO, SECUENCIA_ENCUESTA, P400, P404)
+
+
+tecnologia_ninos_var <- select(Datos_cruzados_tecnologia_ninos, DIRECTORIO, SECUENCIA_ENCUESTA, P1910, P1911, P1912, P1084, P1083S1, P1083S2, P1083S3, P1083S4,  P1083S5, P1083S6, P1083S7, P1083S8, P1083S9, P1083S10, P1083S12, P1083S13, P1083S14, P1083S15, P1083S11, P1929, P1082, P1082S1, P1082S2)
+
+tecnologia_abuelos_var <- select(Datos_cruzados_tecnologia_abuelos, DIRECTORIO, SECUENCIA_ENCUESTA, P1910, P1911, P1912, P1084, P1083S1, P1083S2, P1083S3, P1083S4,  P1083S5, P1083S6, P1083S7, P1083S8, P1083S9, P1083S10, P1083S12, P1083S13, P1083S14, P1083S15, P1083S11, P1929, P1082, P1082S1, P1082S2)
+```
+
+```{r}
+for (i in 1:nrow(trabajo_infantil_var)){
+  count <- 50
+  ifelse(trabajo_infantil_var[i,3]==1,count<-count-20,count)   #400
+  ifelse(trabajo_infantil_var[i,3]==2,count<-count-30,count)
+  ifelse(trabajo_infantil_var[i,3]==3,count<-count+30,count)
+  ifelse(trabajo_infantil_var[i,3]==4,count<-count-10,count)
+  ifelse(trabajo_infantil_var[i,3]==5,count<-count-25,count)
+  ifelse(trabajo_infantil_var[i,3]==6,count<-count+0,count)
+  
+  ifelse(trabajo_infantil_var[i,4]==1,count<-count-20,count)    #404
+  ifelse(trabajo_infantil_var[i,4]==2,count<-count+20,count)
+  
+  
+ 
+  
+  
+  
+trabajo_infantil_var[i,5]<-count
+}
+colnames(trabajo_infantil_var)[5] <-"Satisfaccion"
+
+
+
+```
+
+```{r}
+for (i in 1:nrow(tecnologia_abuelos_var)){
+  count <- 50
+  ifelse(tecnologia_abuelos_var[i,3]==1,count<-count+2,count)   #1910
+  ifelse(tecnologia_abuelos_var[i,3]==2,count<-count+1,count)
+  ifelse(tecnologia_abuelos_var[i,3]==3,count<-count-0,count)
+  ifelse(tecnologia_abuelos_var[i,3]==4,count<-count-1,count)
+  ifelse(tecnologia_abuelos_var[i,3]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_abuelos_var[i,4]==1,count<-count+2,count)   #1911
+  ifelse(tecnologia_abuelos_var[i,4]==2,count<-count+1,count)
+  ifelse(tecnologia_abuelos_var[i,4]==3,count<-count-0,count)
+  ifelse(tecnologia_abuelos_var[i,4]==4,count<-count-1,count)
+  ifelse(tecnologia_abuelos_var[i,4]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_abuelos_var[i,5]==1,count<-count+2,count)   #1912
+  ifelse(tecnologia_abuelos_var[i,5]==2,count<-count+1,count)
+  ifelse(tecnologia_abuelos_var[i,5]==3,count<-count-0,count)
+  ifelse(tecnologia_abuelos_var[i,5]==4,count<-count-1,count)
+  ifelse(tecnologia_abuelos_var[i,5]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_abuelos_var[i,6]==1,count<-count+2,count)   #1084
+  ifelse(tecnologia_abuelos_var[i,6]==2,count<-count+1,count)
+  ifelse(tecnologia_abuelos_var[i,6]==3,count<-count-0,count)
+  ifelse(tecnologia_abuelos_var[i,6]==4,count<-count-1,count)
+  ifelse(tecnologia_abuelos_var[i,6]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_abuelos_var[i,7]==1,count<-count+2,count)  #1083S1
+  
+  
+  ifelse(tecnologia_abuelos_var[i,8]==1,count<-count+2,count) #1083S2
+  
+  
+  ifelse(tecnologia_abuelos_var[i,9]==1,count<-count+2,count) #1083S3
+  
+  
+  ifelse(tecnologia_abuelos_var[i,10]==1,count<-count+2,count) #1083S4
+  
+  
+  
+  ifelse(tecnologia_abuelos_var[i,11]==1,count<-count+2,count) #1083S5
+  
+  
+  ifelse(tecnologia_abuelos_var[i,12]==1,count<-count+2,count) #1083S6
+  
+  
+  ifelse(tecnologia_abuelos_var[i,13]==1,count<-count+2,count) #1083S7
+  
+  
+  ifelse(tecnologia_abuelos_var[i,14]==1,count<-count+2,count) #1083S8
+  
+  
+  ifelse(tecnologia_abuelos_var[i,15]==1,count<-count+2,count) #1083S9
+  
+  
+  ifelse(tecnologia_abuelos_var[i,16]==1,count<-count+2,count) #1083S10
+  
+  
+  ifelse(tecnologia_abuelos_var[i,17]==1,count<-count+2,count) #1083S11
+  
+  
+  ifelse(tecnologia_abuelos_var[i,18]==1,count<-count+2,count) #1083S12
+  
+  
+  ifelse(tecnologia_abuelos_var[i,19]==1,count<-count+2,count) #1083S13
+  
+  
+  ifelse(tecnologia_abuelos_var[i,20]==1,count<-count+2,count) #1083S14
+  
+  ifelse(tecnologia_abuelos_var[i,21]==1,count<-count+2,count) #1083S15
+  
+  
+  ifelse(tecnologia_abuelos_var[i,22]==1,count<-count-15,count)   #1929
+  ifelse(tecnologia_abuelos_var[i,22]==2,count<-count-0,count)
+  ifelse(tecnologia_abuelos_var[i,22]==3,count<-count-13,count)
+  ifelse(tecnologia_abuelos_var[i,22]==4,count<-count-13,count)
+  ifelse(tecnologia_abuelos_var[i,22]==5,count<-count-16,count)
+  ifelse(tecnologia_abuelos_var[i,22]==6,count<-count-0,count)
+  ifelse(tecnologia_abuelos_var[i,22]==7,count<-count-12,count)
+  
+  ifelse(tecnologia_abuelos_var[i,23]==1,count<-count+0,count) #1082
+  ifelse(tecnologia_abuelos_var[i,23]==2,count<-count-18,count)
+  
+  ifelse(tecnologia_abuelos_var[i,24]==1,count<-count+2,count) #1082S1
+  ifelse(tecnologia_abuelos_var[i,24]==1,count<-count-0,count)
+  
+  ifelse(tecnologia_abuelos_var[i,25]==1,count<-count+10,count) #1082S2
+  ifelse(tecnologia_abuelos_var[i,25]==2,count<-count+0,count)
+  
+  
+  
+  
+  
+tecnologia_abuelos_var[i,26]<-count
+}
+colnames(tecnologia_abuelos_var)[26] <-"Satisfaccion"
+
+#write.csv(Dsalud_abuelos[,83],file="Abuelos_satis.csv")
+
+```
+
+```{r}
+for (i in 1:nrow(tecnologia_ninos_var)){
+  count <- 50
+  ifelse(tecnologia_ninos_var[i,3]==1,count<-count+2,count)   #1910
+  ifelse(tecnologia_ninos_var[i,3]==2,count<-count+1,count)
+  ifelse(tecnologia_ninos_var[i,3]==3,count<-count-0,count)
+  ifelse(tecnologia_ninos_var[i,3]==4,count<-count-1,count)
+  ifelse(tecnologia_ninos_var[i,3]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_ninos_var[i,4]==1,count<-count+2,count)   #1911
+  ifelse(tecnologia_ninos_var[i,4]==2,count<-count+1,count)
+  ifelse(tecnologia_ninos_var[i,4]==3,count<-count-0,count)
+  ifelse(tecnologia_ninos_var[i,4]==4,count<-count-1,count)
+  ifelse(tecnologia_ninos_var[i,4]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_ninos_var[i,5]==1,count<-count+2,count)   #1912
+  ifelse(tecnologia_ninos_var[i,5]==2,count<-count+1,count)
+  ifelse(tecnologia_ninos_var[i,5]==3,count<-count-0,count)
+  ifelse(tecnologia_ninos_var[i,5]==4,count<-count-1,count)
+  ifelse(tecnologia_ninos_var[i,5]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_ninos_var[i,6]==1,count<-count+2,count)   #1084
+  ifelse(tecnologia_ninos_var[i,6]==2,count<-count+1,count)
+  ifelse(tecnologia_ninos_var[i,6]==3,count<-count-0,count)
+  ifelse(tecnologia_ninos_var[i,6]==4,count<-count-1,count)
+  ifelse(tecnologia_ninos_var[i,6]==5,count<-count-4,count)
+  
+  ifelse(tecnologia_ninos_var[i,7]==1,count<-count+2,count)  #1083S1
+  
+  
+  ifelse(tecnologia_ninos_var[i,8]==1,count<-count+2,count) #1083S2
+  
+  
+  ifelse(tecnologia_ninos_var[i,9]==1,count<-count+2,count) #1083S3
+  
+  
+  ifelse(tecnologia_ninos_var[i,10]==1,count<-count+2,count) #1083S4
+  
+  
+  
+  ifelse(tecnologia_ninos_var[i,11]==1,count<-count+2,count) #1083S5
+  
+  
+  ifelse(tecnologia_ninos_var[i,12]==1,count<-count+2,count) #1083S6
+  
+  
+  ifelse(tecnologia_ninos_var[i,13]==1,count<-count+2,count) #1083S7
+  
+  
+  ifelse(tecnologia_ninos_var[i,14]==1,count<-count+2,count) #1083S8
+  
+  
+  ifelse(tecnologia_ninos_var[i,15]==1,count<-count+2,count) #1083S9
+  
+  
+  ifelse(tecnologia_ninos_var[i,16]==1,count<-count+2,count) #1083S10
+  
+  
+  ifelse(tecnologia_ninos_var[i,17]==1,count<-count+2,count) #1083S11
+  
+  
+  ifelse(tecnologia_ninos_var[i,18]==1,count<-count+2,count) #1083S12
+  
+  
+  ifelse(tecnologia_ninos_var[i,19]==1,count<-count+2,count) #1083S13
+  
+  
+  ifelse(tecnologia_ninos_var[i,20]==1,count<-count+2,count) #1083S14
+  
+  ifelse(tecnologia_ninos_var[i,21]==1,count<-count+2,count) #1083S15
+  
+  
+  ifelse(tecnologia_ninos_var[i,22]==1,count<-count-15,count)   #1929
+  ifelse(tecnologia_ninos_var[i,22]==2,count<-count-0,count)
+  ifelse(tecnologia_ninos_var[i,22]==3,count<-count-13,count)
+  ifelse(tecnologia_ninos_var[i,22]==4,count<-count-13,count)
+  ifelse(tecnologia_ninos_var[i,22]==5,count<-count-16,count)
+  ifelse(tecnologia_ninos_var[i,22]==6,count<-count-0,count)
+  ifelse(tecnologia_ninos_var[i,22]==7,count<-count-12,count)
+  
+  ifelse(tecnologia_ninos_var[i,23]==1,count<-count+0,count) #1082
+  ifelse(tecnologia_ninos_var[i,23]==2,count<-count-18,count)
+  
+  ifelse(tecnologia_ninos_var[i,24]==1,count<-count+2,count) #1082S1
+  ifelse(tecnologia_ninos_var[i,24]==1,count<-count-0,count)
+  
+  ifelse(tecnologia_ninos_var[i,25]==1,count<-count+10,count) #1082S2
+  ifelse(tecnologia_ninos_var[i,25]==2,count<-count+0,count)
+  
+  
+  
+  
+  
+tecnologia_ninos_var[i,26]<-count
+}
+colnames(tecnologia_ninos_var)[26] <-"Satisfaccion"
+
+#write.csv(tecnologia_ninos_var[,83],file="Abuelos_satis.csv")
+
+```
+
+
+## Creación de la variable satisfacción para los datasets de composición del hogar y servicios del hogar para niños y abuelos.      
+
+```{r warning=FALSE, error=FALSE}
+library(readr)
+Serv_hogar <- read_delim("Servicios del hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+#View(Serv_hogar)
+```
+
+```{r}
+library(readr)
+Comp_hogar <- read_delim("Características y composición del hogar.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+#View(Comp_hogar)
+```
+
+```{r}
+#Composicion del hogar niños y abuelos
+comp_hogar_abuelos_todo <- merge(x=datos_abuelos_indices,y=Comp_hogar,by=c("SECUENCIA_ENCUESTA","DIRECTORIO","SECUENCIA_P"))
+comp_hogar_ninos_todo <- merge(x=datos_ninos_indices,y=Comp_hogar,by=c("SECUENCIA_ENCUESTA","DIRECTORIO","SECUENCIA_P"))
+serv_hogar_abuelos_todo <- merge(x=datos_abuelos_indices,y=Serv_hogar,by=c("SECUENCIA_ENCUESTA","DIRECTORIO","SECUENCIA_P"))
+```
+
+```{r}
+library(dplyr)
+comp_hogar_abuelos <- select(comp_hogar_abuelos_todo, DIRECTORIO, SECUENCIA_ENCUESTA, P1895, P1897, P1898, P3175, P1901, P1903, P1904)
+
+comp_hogar_ninos <- select(comp_hogar_ninos_todo, DIRECTORIO, SECUENCIA_ENCUESTA, P1895, P1897, P1898, P3175, P1901, P1903, P1904)
+
+serv_hogar_abuelos <- select(serv_hogar_abuelos_todo, DIRECTORIO, SECUENCIA_ENCUESTA, P5000, P5018, P5666, P8526, P3164, P5030, P1892S1, P1892S2, P1892S3, P5041, P792, P3166, P8534, P8536, P3173, I_HOGAR, I_UGASTO)
+```
+
+```{r}
+#satisfaccion comp hogar abuelos
+for (i in 1:nrow(comp_hogar_abuelos)){
+  count <- 50
+  
+#P1895 ¿que tan satisfecho se siente con la vida?
+  ifelse(comp_hogar_abuelos[i,3]>=8,count<-count+10,count)
+  ifelse(comp_hogar_abuelos[i,3]<=7 & comp_hogar_abuelos[i,3]>=6,count<-count+5,count)
+  ifelse(comp_hogar_abuelos[i,3]<6 & comp_hogar_abuelos[i,3]>=4,count<-count,count)
+  ifelse(comp_hogar_abuelos[i,3]<4 & comp_hogar_abuelos[i,3]>=2,count<-count-5,count)
+  ifelse(comp_hogar_abuelos[i,3]<2 & comp_hogar_abuelos[i,3]>=0,count<-count-10,count)
+  
+#P1897 ¿que tan satisfecho se siente con su salud?
+  ifelse(comp_hogar_abuelos[i,4]>=8,count<-count+10,count)
+  ifelse(comp_hogar_abuelos[i,4]<=7 & comp_hogar_abuelos[i,4]>=6,count<-count+5,count)
+  ifelse(comp_hogar_abuelos[i,4]< 6 & comp_hogar_abuelos[i,4]>=4,count<-count-2,count)
+  ifelse(comp_hogar_abuelos[i,4]< 4 & comp_hogar_abuelos[i,4]>=2,count<-count-5,count)
+  ifelse(comp_hogar_abuelos[i,4]< 2 & comp_hogar_abuelos[i,4]>=0,count<-count-10,count)   
+  
+#P1898 ¿que tan satisfecho se siente con su nivel de seguridad?
+  ifelse(comp_hogar_abuelos[i,5]>=7,count<-count+3,count)
+  ifelse(comp_hogar_abuelos[i,5]< 7 & comp_hogar_abuelos[i,5]>=5,count<-count-1,count)
+  ifelse(comp_hogar_abuelos[i,5]<=4,count<-count-6,count)
+  
+#P3175 ¿que tan satisfecho se siente con su tiempo libre?
+  ifelse(comp_hogar_abuelos[i,6]>=7,count<-count+5,count)
+  ifelse(comp_hogar_abuelos[i,6]<7 & comp_hogar_abuelos[i,6]>=4,count<-count,count)
+  ifelse(comp_hogar_abuelos[i,6]<=3,count<-count-3,count)
+  
+#P1901 ¿que tan feliz se sintio ayer?
+  ifelse(comp_hogar_abuelos[i,7]>=7,count<-count+5,count)
+  ifelse(comp_hogar_abuelos[i,7]<7 & comp_hogar_abuelos[i,7]>=4,count<-count-2,count)
+  ifelse(comp_hogar_abuelos[i,7]<=3,count<-count-4,count)
+
+#P1903 ¿que tan preocupado se sintio ayer?
+  ifelse(comp_hogar_abuelos[i,8]>=7,count<-count-10,count)
+  ifelse(comp_hogar_abuelos[i,8]<7 & comp_hogar_abuelos[i,8]>=4,count<-count-5,count)
+  ifelse(comp_hogar_abuelos[i,8]<=3,count<-count+5,count)
+  
+#P1904 ¿que tan triste se sintio ayer?
+  ifelse(comp_hogar_abuelos[i,9]>=7,count<-count-7,count)
+  ifelse(comp_hogar_abuelos[i,9]<7 & comp_hogar_abuelos[i,9]>=4,count<-count-2,count)
+  ifelse(comp_hogar_abuelos[i,9]<=3,count<-count+3,count)
+  
+  
+comp_hogar_abuelos[i,10]<-count
+}
+colnames(comp_hogar_abuelos)[10] <-"Satisfaccion"
+
+```
+
+```{r}
+#satisfaccion servicios del hogar abuelos
+for (i in 1:nrow(serv_hogar_abuelos)){
+  count <- 50
+#P5000 Incluyendo sala-comedor ¿de cuántos cuartos en total dispone este hogar?
+  ifelse(serv_hogar_abuelos[i,3]>6,count<-count+3,count)
+  ifelse(serv_hogar_abuelos[i,3]<=6 & serv_hogar_abuelos[i,3]>2,count<-count+1,count)
+  ifelse(serv_hogar_abuelos[i,3]<=2 & serv_hogar_abuelos[i,3]>0,count<-count-1,count)
+  
+#P5018 ¿Cuánto pagaron EL MES PASADO o la última vez por la electricidad consumida?
+  ifelse(serv_hogar_abuelos[i,4]< 20000, count<-count+5,count)
+  ifelse(serv_hogar_abuelos[i,4]<=100000 & serv_hogar_abuelos[i,4]>20000,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,4]<=200000 & serv_hogar_abuelos[i,4]>100000,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,4]<=400000 & serv_hogar_abuelos[i,4]>200000,count<-count-3,count)
+  ifelse(serv_hogar_abuelos[i,4]>400000,count<-count-5,count)
+  
+#P5666 ¿En este hogar tienen servicio de Gas Natural conectado a red pública?
+  ifelse(serv_hogar_abuelos[i,5]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,5]==2,count<-count-1,count)
+  
+#P8526 ¿Con qué tipo de servicio sanitario cuenta el hogar? 1 Inodoro conectado a alcantarillado | 2 Inodoro conectado a pozo séptico | 3 Inodoro sin conexión | 4 Letrina | 5 Inodoro con descarga directa a fuentes de agua (bajamar) | 6 No tiene servicio sanitario
+  ifelse(serv_hogar_abuelos[i,6]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,6]==2,count<-count+1,count)
+  ifelse(serv_hogar_abuelos[i,6]==3,count<-count-2,count)
+  ifelse(serv_hogar_abuelos[i,6]==4,count<-count-2,count)
+  ifelse(serv_hogar_abuelos[i,6]==5,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,6]==6,count<-count-7,count)
+  
+#P3164 ¿Quién realiza generalmente el mantenimiento o vaciado del servicio sanitario?
+  ifelse(serv_hogar_abuelos[i,7]==1,count<-count+1,count)
+  ifelse(serv_hogar_abuelos[i,7]==2,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,7]==3,count<-count+1,count)
+  ifelse(serv_hogar_abuelos[i,7]==4,count<-count-4,count)
+
+#P5030 El  servicio sanitario del hogar es: 1 De uso exclusivo de las personas del hogar, 2 Compartido con personas de otros hogares
+  ifelse(serv_hogar_abuelos[i,8]==1,count<-count+1,count)
+  ifelse(serv_hogar_abuelos[i,8]==2,count<-count-1,count)
+  
+#	El hogar cuenta con:
+#P1892S1 	Lavamanos
+  ifelse(serv_hogar_abuelos[i,9]==1,count<-count+1,count<-count-1)
+#P1892S2 	Lavadero
+  ifelse(serv_hogar_abuelos[i,10]==1,count<-count+1,count<-count-1)
+#P1892S3 	Lavaplatos
+  ifelse(serv_hogar_abuelos[i,11]==1,count<-count+1,count<-count-1)
+  
+#P5041 ¿Cómo eliminan principalmente la basura en este hogar? 1 La recogen los servicios del aseo |  2 La tiran a un río, quebrada, caño o laguna | 3 La tiran a un patio, lote, zanja o baldío | 4 La queman | 5 La entierran | 6 La recoge un servicio informal (zorra, carreta, etc.)
+  ifelse(serv_hogar_abuelos[i,12]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,12]==2,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,12]==3,count<-count-2,count)
+  ifelse(serv_hogar_abuelos[i,12]==4,count<-count-2,count)
+  ifelse(serv_hogar_abuelos[i,12]==5,count<-count-2,count)
+  ifelse(serv_hogar_abuelos[i,12]==6,count<-count-1,count)
+  
+#P792 ¿Pagan en este hogar por servicio de acueducto? 1 Sí | 2 Sí, con el arriendo | 3 No pagan, pero tienen el servicio | 4 No tienen el servicio
+  ifelse(serv_hogar_abuelos[i,13]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,13]==2,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,13]==3,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,13]==4,count<-count-2,count)
+  
+#P3166 ¿Considera que el agua disponible es suficiente? 1 Sí | 2 No
+  ifelse(serv_hogar_abuelos[i,14]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,14]==2,count<-count-3,count)
+  
+#P8534 ¿El hogar tiene cocina? (espacio exclusivo para preparar alimentos) 1 Sí | 2 No
+  ifelse(serv_hogar_abuelos[i,15]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,15]==2,count<-count-3,count)
+
+#P8536 ¿qué energía o combustible utilizan principalmente para cocinar? 1 Electricidad | 2 Gas natural conectado a red pública | 3 Petróleo, gasolina, kerosene, alcohol, cocinol | 4 Gas propano / GLP (en cilindro o pipeta) | 5 Carbón mineral | 6 Leña, madera | 7 Carbón de leña | 8 Material de desecho
+  ifelse(serv_hogar_abuelos[i,16]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,16]==2,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,16]==3,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,16]==4,count<-count+1,count)
+  ifelse(serv_hogar_abuelos[i,16]==5,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,16]==6,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,16]==7,count<-count-1,count)
+  ifelse(serv_hogar_abuelos[i,16]==8,count<-count-2,count)
+  
+#P3173 	En los últimos 12 meses, ¿ha sufrido eventos climáticos (inundaciones, desbordamientos, crecientes, arroyos, sequías, tormentas o vendavales) que afectaron su vida o la de algún integrante del hogar?
+  ifelse(serv_hogar_abuelos[i,17]==1,count<-count+2,count)
+  ifelse(serv_hogar_abuelos[i,17]==2,count<-count-2,count)
+  
+#I_HOGAR Ingreso mensual total del hogar
+  
+  
+#I_UGASTO Ingreso mensual total de la unidad de gasto
+
+serv_hogar_abuelos[i,20]<-count
+}
+colnames(serv_hogar_abuelos)[20] <-"Satisfaccion"
+
+```
+
+## Creación de la variable satisfacción para los datasets de fuerza de trabajo y educación para niños y abuelos.
+
+```{r}
+Fuerza_de_trabajo <- read_delim("Fuerza de trabajo.csv", ";", escape_double = FALSE, trim_ws = TRUE)
+Educacion <- read_delim("Educación.csv", ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r}
+#Datos trabajo abuelos
+Datos_cruzados_abuelos_trabajo <- merge(x = datos_abuelos_indices, y = Fuerza_de_trabajo, by = c("DIRECTORIO", "SECUENCIA_ENCUESTA", "SECUENCIA_P"))
+
+#Datos estudio abuelos
+Datos_cruzados_abuelos_Estudio <- merge(x = datos_ninos_indices, y = Educacion, by = c("DIRECTORIO", "SECUENCIA_ENCUESTA","SECUENCIA_P"))
+
+#Datos estudio ninos
+Datos_cruzados_ninos_Estudio <- merge(x = datos_ninos_indices, y = Educacion, by = c("DIRECTORIO", "SECUENCIA_ENCUESTA","SECUENCIA_P"))
+
+```
+
+```{r}
+library(dplyr)
+DEducacion_ninos <- select(Datos_cruzados_ninos_Estudio, DIRECTORIO, SECUENCIA_ENCUESTA,P6160,P8586,P6218,P8587,P6211,P4693,P6167)
+
+DEducacion_abuelos <- select(Datos_cruzados_abuelos_Estudio, DIRECTORIO, SECUENCIA_ENCUESTA,P6160,P8586,P6218,P8587,P6211,P4693,P6167)
+
+DFuerzaTrabajo <- select(Datos_cruzados_abuelos_trabajo, DIRECTORIO, SECUENCIA_ENCUESTA,P6240,P8626,P8628,P6460,P6990,P8622,P8630,P1087S1,P1087S2,P1087S3,P1087S4,P1087S5,P415,P8640,P6920,P6935,P8642,P8646,P8648)
+
+```
+
+```{r}
+for (i in 1:nrow(DEducacion_ninos)){
+  count <- 0
+  ifelse(DEducacion_ninos[i,3]==1,count<-count+16,count)   #P6160
+  ifelse(DEducacion_ninos[i,3]==2,count<-count+8,count)
+  
+  ifelse(DEducacion_ninos[i,4]==1,count<-count+16,count)   #P8586
+  ifelse(DEducacion_ninos[i,4]==2,count<-count+8,count)
+  
+  ifelse(DEducacion_ninos[i,5]==1,count<-count+0,count)   #P6218   
+  ifelse(DEducacion_ninos[i,5]==2,count<-count-0,count)
+  ifelse(DEducacion_ninos[i,5]==3,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==4,count<-count-2,count)
+  ifelse(DEducacion_ninos[i,5]==5,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==6,count<-count-2,count)
+  ifelse(DEducacion_ninos[i,5]==7,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==8,count<-count-2,count)
+  ifelse(DEducacion_ninos[i,5]==9,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==10,count<-count-2,count)
+  ifelse(DEducacion_ninos[i,5]==11,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==12,count<-count-2,count)
+  ifelse(DEducacion_ninos[i,5]==13,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==14,count<-count-2,count)
+  ifelse(DEducacion_ninos[i,5]==15,count<-count-2,count)   
+  ifelse(DEducacion_ninos[i,5]==16,count<-count-0,count)
+  
+  ifelse(DEducacion_ninos[i,6]==1,count<-count-2,count)   #P8587
+  ifelse(DEducacion_ninos[i,6]==2,count<-count+4,count)
+  ifelse(DEducacion_ninos[i,6]==3,count<-count+4,count)
+  ifelse(DEducacion_ninos[i,6]==4,count<-count+4,count)
+  ifelse(DEducacion_ninos[i,6]==5,count<-count+4,count)
+  ifelse(DEducacion_ninos[i,6]==6,count<-count-0,count)
+  ifelse(DEducacion_ninos[i,6]==7,count<-count+0,count)
+  ifelse(DEducacion_ninos[i,6]==8,count<-count-0,count)
+  ifelse(DEducacion_ninos[i,6]==9,count<-count+0,count)
+  ifelse(DEducacion_ninos[i,6]==10,count<-count+0,count)
+  ifelse(DEducacion_ninos[i,6]==11,count<-count+0,count)
+  ifelse(DEducacion_ninos[i,6]==12,count<-count+0,count)
+  ifelse(DEducacion_ninos[i,6]==13,count<-count+0,count)
+  
+  #P6211
+  
+  
+  ifelse(DEducacion_ninos[i,8]==1,count<-count+16,count)   #P4693
+  ifelse(DEducacion_ninos[i,8]==3,count<-count+8,count)
+  
+  ifelse(DEducacion_ninos[i,9]<60,count<-count+16,count)   #P6167
+  ifelse(DEducacion_ninos[i,9]>=60,count<-count+8,count)
+  
+   
+  
+  
+  
+DEducacion_ninos[i,10]<-count
+}
+colnames(DEducacion_ninos)[10] <-"Satisfaccion"
+```
+
+```{r}
+for (i in 1:nrow(DEducacion_abuelos)){
+  count <- 40
+  ifelse(DEducacion_abuelos[i,3]==1,count<-count+20,count)   #P6160
+  ifelse(DEducacion_abuelos[i,3]==2,count<-count+4,count)
+  
+  ifelse(DEducacion_abuelos[i,4]==1,count<-count+0,count)   #P8586
+  ifelse(DEducacion_abuelos[i,4]==2,count<-count-0,count)
+  
+  ifelse(DEducacion_abuelos[i,5]==1,count<-count+20,count)   #P6218   
+  ifelse(DEducacion_abuelos[i,5]==2,count<-count+0,count)
+  ifelse(DEducacion_abuelos[i,5]==3,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==4,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,5]==5,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==6,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,5]==7,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==8,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,5]==9,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==10,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,5]==11,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==12,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,5]==13,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==14,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,5]==15,count<-count+0,count)   
+  ifelse(DEducacion_abuelos[i,5]==16,count<-count-0,count)
+  
+  ifelse(DEducacion_abuelos[i,6]==1,count<-count-0,count)   #P8587
+  ifelse(DEducacion_abuelos[i,6]==2,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,6]==3,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,6]==4,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,6]==5,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,6]==6,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,6]==7,count<-count+20,count)
+  ifelse(DEducacion_abuelos[i,6]==8,count<-count-0,count)
+  ifelse(DEducacion_abuelos[i,6]==9,count<-count+20,count)
+  ifelse(DEducacion_abuelos[i,6]==10,count<-count+20,count)
+  ifelse(DEducacion_abuelos[i,6]==11,count<-count+20,count)
+  ifelse(DEducacion_abuelos[i,6]==12,count<-count+20,count)
+  ifelse(DEducacion_abuelos[i,6]==13,count<-count+20,count)
+  
+  #P6211
+  ifelse(DEducacion_abuelos[i,7]>5,count<-count+20,count)
+  ifelse(DEducacion_abuelos[i,7]<1,count<-count+4,count)
+  
+  ifelse(DEducacion_abuelos[i,8]==1,count<-count+0,count)   #P4693
+  ifelse(DEducacion_abuelos[i,8]==3,count<-count+0,count)
+  
+  ifelse(DEducacion_abuelos[i,9]<60,count<-count+0,count)   #P6167
+  ifelse(DEducacion_abuelos[i,9]>=60,count<-count-0,count)
+  
+   
+  
+  
+  
+DEducacion_abuelos[i,10]<-count
+}
+colnames(DEducacion_abuelos)[10] <-"Satisfaccion"
+
+```
+
+```{r}
+for (i in 1:nrow(DFuerzaTrabajo)){
+  count <- 0
+  ifelse(DFuerzaTrabajo[i,3]==1,count<-count+0,count) #P6240
+  ifelse(DFuerzaTrabajo[i,3]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,3]==3,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,3]==4,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,3]==5,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,4]==1,count<-count+5,count) #P8626
+  ifelse(DFuerzaTrabajo[i,4]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,4]==3,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,5]==1,count<-count+5,count) #P8628
+  ifelse(DFuerzaTrabajo[i,5]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,5]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,6]==1,count<-count+5.5,count) #P6460
+  ifelse(DFuerzaTrabajo[i,6]==2,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,7]==1,count<-count+5.5,count) #P6990
+  ifelse(DFuerzaTrabajo[i,7]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,7]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,8]==1,count<-count+5.5,count) #P8622
+  ifelse(DFuerzaTrabajo[i,8]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,8]==3,count<-count+3,count)
+  
+  ifelse(DFuerzaTrabajo[i,9]==1,count<-count+5.5,count) #P8630
+  ifelse(DFuerzaTrabajo[i,9]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,9]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,10]==1,count<-count+5.5,count) #P1087s1
+  ifelse(DFuerzaTrabajo[i,10]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,10]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,11]==1,count<-count+5.5,count) #P1087s2
+  ifelse(DFuerzaTrabajo[i,11]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,11]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,12]==1,count<-count+5.5,count) #P1087s3
+  ifelse(DFuerzaTrabajo[i,12]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,12]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,13]==1,count<-count+5.5,count) #P1087s4
+  ifelse(DFuerzaTrabajo[i,13]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,13]==9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,14]==1,count<-count+5.5,count) #P1087s5
+  ifelse(DFuerzaTrabajo[i,14]==2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,14]==9,count<-count+0,count)
+
+  ifelse(DFuerzaTrabajo[i,15] >= 48,count<-count+0,count) #P415
+  ifelse(DFuerzaTrabajo[i,15] < 48,count<-count+5.5,count)
+  
+  ifelse(DFuerzaTrabajo[i,16] == 1,count<-count+5.5,count) #p8640 
+  ifelse(DFuerzaTrabajo[i,16] == 2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,16] == 9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,17] == 1,count<-count+5.5,count) #p6920 
+  ifelse(DFuerzaTrabajo[i,17] == 2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,17] == 9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,18] == 1,count<-count+5.5,count) #p6935 
+  ifelse(DFuerzaTrabajo[i,18] == 2,count<-count+3,count)
+  ifelse(DFuerzaTrabajo[i,18] == 3,count<-count+5.5,count)
+  ifelse(DFuerzaTrabajo[i,18] == 4,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,19] == 1,count<-count+5.5,count) #p8642
+  ifelse(DFuerzaTrabajo[i,19] == 2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,19] == 9,count<-count+0,count)
+  
+  ifelse(DFuerzaTrabajo[i,20] == 1,count<-count+5.5,count) #p8646
+  ifelse(DFuerzaTrabajo[i,20] == 2,count<-count+0,count)
+ 
+  
+  ifelse(DFuerzaTrabajo[i,21] == 1,count<-count+5.5,count) #p8648
+  ifelse(DFuerzaTrabajo[i,21] == 2,count<-count+0,count)
+  ifelse(DFuerzaTrabajo[i,21] == 9,count<-count+0,count)
+  
+  
+DFuerzaTrabajo[i,22]<-count
+}
+colnames(DFuerzaTrabajo)[22] <-"Satisfaccion"
+```
