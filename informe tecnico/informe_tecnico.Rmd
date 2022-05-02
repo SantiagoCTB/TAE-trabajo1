@@ -139,6 +139,17 @@ Utilizando los datos de validación se predijo la satisfacción y se calculó el
 Se observó que este modelo ajusta mucho mejor los datos, puesto que el 89% de las predicciones tienen un error absoluto menor al 10% asi que  que el modelo para los niños es muy acertado.
 
 
+### Conclusiones y recomendaciones  
+
+* A partir de la investigacion realizada podemos concluir que la satisfacción vital se ve afectada por factores aparentemente externos como la vivienda, la salud, educacción y tecnología tanto positiva como negativamente.
+
+* El modelo de regresión lineal multiple no fue el mejor modelo para tratar de predecir puesto que los parametros $B_n$ son bastante bajos en el caso del modelo para los niños en comparacion con el intercepto.
+
+* Las bases de datos utilizadas presentaron muchas problemáticas al hora de realizar pre-procesamiento y análisis como por ejemplo la correlación entre variables o entre indices de bases, ademas la ausencia de una variable satisfaccion verdadera en el caso de los niños complica bastante el desarrollo de un modelo coherente y eficiente.
+
+* Se recomienda distribuir los valores de significancia de una manera diferente ya sea reasignando valores o empleando un tipo de modelo de predicción.
+
+
 ### Referencias
 
 * DANE. (2009). Metodología Encuesta Nacional de Calidad de Vida, de https://www.dane.gov.co/files/investigaciones/fichas/ECV.pdf 
@@ -157,14 +168,3 @@ Se observó que este modelo ajusta mucho mejor los datos, puesto que el 89% de l
 UNICEF. (2021). Understanding child subjective well-being: A call for more data, research and policymaking targeting children, de https://www.unicef.org/globalinsight/media/2116/file/UNICEF-Global-Insight-Understanding-Child-Subjective-Wellbeing-2021.pdf
 
 * Gamero, C. y Lassibille G. (2012). Escolarización, trabajo infantil y satisfacción laboral: evidencia para etiopía. Revista de Economía Aplicada, vol. XX, núm. 58, 2012, pp. 95-118. de https://www.redalyc.org/pdf/969/96924442004.pdf
-
-
-### Conclusiones y recomendaciones  
-
-* A partir de la investigacion realizada podemos concluir que la satisfacción vital se ve afectada por factores aparentemente externos como la vivienda, la salud, educacción y tecnología tanto positiva como negativamente.
-
-* El modelo de regresión lineal multiple no fue el mejor modelo para tratar de predecir puesto que los parametros $B_n$ son bastante bajos en el caso del modelo para los niños en comparacion con el intercepto.
-
-* Las bases de datos utilizadas presentaron muchas problemáticas al hora de realizar pre-procesamiento y análisis como por ejemplo la correlación entre variables o entre indices de bases, ademas la ausencia de una variable satisfaccion verdadera en el caso de los niños complica bastante el desarrollo de un modelo coherente y eficiente.
-
-* Se recomienda distribuir los valores de significancia de una manera diferente ya sea reasignando valores o empleando un tipo de modelo de predicción.

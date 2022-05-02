@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/897092/857327a3a28544cb967e3f65411ef5f7
+bundleId: https://api.rpubs.com/api/v1/document/897092/857327a3a28544cb967e3f65411ef5f7
+url: http://rpubs.com/selopez/897092
+when: 1651451104.72234
+lastSyncTime: 1651451104.72234
